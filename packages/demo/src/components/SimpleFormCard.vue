@@ -1,0 +1,64 @@
+<script setup lang="ts">
+/**
+ * Demo: Simple form card.
+ * Represents the pattern of cards like OrderBasicInfoForm.
+ */
+import { reactive } from 'vue'
+
+const props = defineProps<{
+  title?: string
+  fields?: Array<{ key: string; label: string; type?: string; placeholder?: string; required?: boolean }>
+}>()
+
+const emit = defineEmits<{
+  (e: 'confirm', data: Record<string, string>): void
+  (e: 'cancel'): void
+}>()
+
+const formData = reactive<Record<string, string>>({})
+
+function handleConfirm() {
+  emit('confirm', { ...formData })
+}
+</script>
+
+<template>
+  <div class="simple-form-card">
+    <div v-if="title" class="card-header">
+      <div class="card-title-text">{{ title }}</div>
+    </div>
+    <div class="card-body">
+      <div v-for="field in fields" :key="field.key" class="form-field">
+        <label class="field-label">
+          {{ field.label }}
+          <span v-if="field.required" class="required">*</span>
+        </label>
+        <input
+          v-model="formData[field.key]"
+          :type="field.type || 'text'"
+          :placeholder="field.placeholder || ''"
+          class="field-input"
+        />
+      </div>
+    </div>
+    <div class="card-footer">
+      <button class="btn-cancel" @click="emit('cancel')">取消</button>
+      <button class="btn-confirm" @click="handleConfirm">确认</button>
+    </div>
+  </div>
+</template>
+
+<style scoped lang="scss">
+@use 'aix-chat/styles/chat-card';
+.simple-form-card { @include chat-card.card-base; }
+.card-header { @include chat-card.card-header; }
+.card-title-text { @include chat-card.card-title; margin: 0; }
+.card-body { @include chat-card.card-content($max-height: 400px); display: flex; flex-direction: column; gap: 14px; }
+.form-field { display: flex; flex-direction: column; gap: 4px; }
+.field-label { font-size: 13px; font-weight: 500; color: var(--text-secondary); }
+.required { color: #ef4444; }
+.field-input { height: 38px; padding: 0 12px; border: 1px solid var(--border-light); border-radius: 8px; background: var(--bg-secondary); color: var(--text-primary); font-size: 14px; outline: none; transition: border-color 0.2s; &:focus { border-color: var(--primary-color); } }
+.card-footer { @include chat-card.card-footer; }
+.btn-cancel { @include chat-card.btn-cancel; }
+.btn-confirm { @include chat-card.btn-confirm; }
+</style>

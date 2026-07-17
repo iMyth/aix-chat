@@ -1,0 +1,430 @@
+.input-area {
+  background: var(--bg-container);
+  padding: 12px 16px;
+  padding-bottom: max(12px, env(safe-area-inset-bottom));
+  border-top: 1px solid var(--border-light);
+  overflow: visible;
+  position: relative;
+  box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.04);
+}
+
+// ── 录音浮窗（飘在输入区上方） ──
+.voice-float {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 18px;
+  border-radius: 20px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-light);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 10;
+  transition:
+    background 0.2s,
+    border-color 0.2s;
+
+  &.cancelled {
+    background: rgba(239, 68, 68, 0.06);
+    border-color: rgba(239, 68, 68, 0.3);
+
+    .voice-wave-bar {
+      background: #ef4444;
+    }
+    .voice-float-time {
+      color: #ef4444;
+    }
+    .voice-float-hint {
+      color: #ef4444;
+    }
+  }
+}
+
+.voice-wave {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  height: 24px;
+}
+
+.voice-wave-bar {
+  width: 3px;
+  border-radius: 2px;
+  background: var(--primary-color);
+  transition: height 0.08s ease-out;
+}
+
+.voice-float-time {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.voice-float-hint {
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+
+// ── 浮窗过渡 ──
+.voice-overlay-enter-active {
+  transition: all 0.2s ease;
+}
+.voice-overlay-leave-active {
+  transition: all 0.15s ease;
+}
+.voice-overlay-enter-from,
+.voice-overlay-leave-to {
+  opacity: 0;
+  transform: translateX(-50%) translateY(4px);
+}
+
+// ── 待操作提示 ──
+.pending-hint {
+  text-align: center;
+  padding: 6px 12px;
+  margin-bottom: 8px;
+  font-size: 12px;
+  color: var(--text-tertiary);
+  background: var(--bg-secondary);
+  border-radius: 10px;
+}
+
+// ── STT 预览 ──
+.stt-preview {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-light);
+  border-radius: 14px;
+}
+
+.stt-preview-text {
+  flex: 1;
+  font-size: 14px;
+  color: var(--text-primary);
+  line-height: 1.5;
+  word-break: break-all;
+}
+
+.stt-preview-actions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.stt-preview-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: all 0.15s;
+
+  &.cancel {
+    background: var(--bg-hover);
+    color: var(--text-tertiary);
+  }
+  &.confirm {
+    background: var(--primary-color);
+    color: white;
+  }
+  &:active {
+    transform: scale(0.92);
+  }
+}
+
+.stt-preview-enter-active {
+  transition: all 0.2s ease;
+}
+.stt-preview-leave-active {
+  transition: all 0.15s ease;
+}
+.stt-preview-enter-from,
+.stt-preview-leave-to {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+// ── 图片预览 ──
+.image-preview-container {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+.image-preview-item {
+  position: relative;
+  width: 64px;
+  height: 64px;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--border-light);
+  background: var(--bg-secondary);
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.remove-image-btn {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.55);
+  color: white;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+// ── 表单 ──
+.input-form {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mode-toggle-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 0;
+  transition: all 0.15s;
+  -webkit-touch-callout: none;
+  user-select: none;
+
+  &:hover {
+    color: var(--text-primary);
+    background: var(--bg-hover);
+  }
+  &:active {
+    transform: scale(0.92);
+  }
+}
+
+.reset-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 0;
+  transition: all 0.15s;
+
+  &:hover {
+    color: var(--text-primary);
+    background: var(--bg-hover);
+  }
+  &:active {
+    transform: scale(0.92);
+  }
+}
+
+.input-wrapper {
+  display: flex;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+  flex: 1;
+  min-width: 0;
+  min-height: 44px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-light);
+  border-radius: 22px;
+  padding: 0 4px;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+
+  &:focus-within {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(36, 139, 251, 0.1);
+  }
+}
+
+.inline-action-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+  flex-shrink: 0;
+  padding: 0;
+  -webkit-touch-callout: none;
+  user-select: none;
+
+  &:hover {
+    color: var(--text-primary);
+    background: var(--bg-hover);
+  }
+  &:active {
+    transform: scale(0.92);
+  }
+
+  &--compact {
+    width: 28px;
+    height: 28px;
+  }
+}
+
+// ── 文字输入 ──
+.chat-input {
+  flex: 1;
+  min-width: 0;
+  height: 36px;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 15px;
+  color: var(--text-primary);
+  padding: 0 8px;
+  line-height: 36px;
+
+  &::placeholder {
+    color: var(--text-tertiary);
+    font-size: 14px;
+  }
+}
+
+.send-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: none;
+  background: var(--bg-hover);
+  color: var(--text-disabled);
+  cursor: not-allowed;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-right: 2px;
+  transition: all 0.2s;
+  padding: 0;
+
+  &.active {
+    background: var(--primary-color);
+    color: white;
+    cursor: pointer;
+
+    &:hover {
+      filter: brightness(1.1);
+      transform: scale(1.06);
+    }
+    &:active {
+      transform: scale(0.94);
+    }
+  }
+}
+
+// ── 按住说话 ──
+.hold-to-talk-btn {
+  flex: 1;
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 15px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  border-radius: 18px;
+  margin: 0 4px;
+  transition:
+    background 0.15s,
+    color 0.15s;
+
+  &:active,
+  &.active {
+    background: rgba(239, 68, 68, 0.08);
+    color: #ef4444;
+  }
+  &.disabled {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+}
+
+.rec-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #ef4444;
+  animation: blink 1s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+@keyframes blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+
+// ── 响应式 ──
+@media (max-width: 768px) {
+  .input-area {
+    padding: 8px 10px;
+    padding-bottom: max(8px, env(safe-area-inset-bottom));
+  }
+  .input-wrapper {
+    min-height: 42px;
+    border-radius: 21px;
+  }
+  .chat-input {
+    font-size: 16px;
+  }
+  .image-preview-item {
+    width: 56px;
+    height: 56px;
+  }
+}

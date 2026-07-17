@@ -1,0 +1,18 @@
+{
+  "name": "aix-chat",
+  "version": "1.0.0",
+  "private": true,
+  "description": "AI Chat component library and demo",
+  "scripts": {
+    "dev": "pnpm -r dev",
+    "dev:ui": "pnpm --filter aix-chat-demo dev",
+    "dev:server": "pnpm --filter aix-chat-server dev",
+    "build": "pnpm -r build",
+    "build:ui": "pnpm --filter aix-chat build",
+    "build:demo": "pnpm --filter aix-chat-demo build",
+    "build:server": "pnpm --filter aix-chat-server build"
+  },
+  "keywords": ["ai", "chat", "vue", "agent"],
+  "author": "",
+  "license": "MIT"
+}

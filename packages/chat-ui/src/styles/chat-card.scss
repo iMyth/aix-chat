@@ -1,0 +1,359 @@
+// ─── Animations ───────────────────────────────────────────────────────────────
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// ─── Scrollbar Mixins ─────────────────────────────────────────────────────────
+
+@mixin scrollbar($width: 6px) {
+  &::-webkit-scrollbar {
+    width: $width;
+  }
+  &::-webkit-scrollbar-track {
+    background: var(--bg-secondary);
+  }
+  &::-webkit-scrollbar-thumb {
+    background: var(--border-normal);
+    border-radius: calc($width / 2);
+  }
+  &::-webkit-scrollbar-thumb:hover {
+    background: var(--border-dark);
+  }
+}
+
+// ─── Card Shell ───────────────────────────────────────────────────────────────
+
+@mixin card-base($radius: 16px, $shadow: var(--shadow-md)) {
+  background: var(--bg-container);
+  border: 1px solid var(--border-light);
+  border-radius: $radius;
+  overflow: hidden;
+  box-shadow: $shadow;
+  width: 100%;
+}
+
+// ─── Gradient Header ──────────────────────────────────────────────────────────
+
+@mixin card-header($padding: 16px 20px) {
+  background: var(--gradient-primary);
+  padding: $padding;
+  text-align: center;
+}
+
+@mixin card-title($size: 16px) {
+  font-size: $size;
+  font-weight: 700;
+  color: white;
+  margin-bottom: 4px;
+}
+
+@mixin card-subtitle($size: 13px) {
+  font-size: $size;
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 500;
+}
+
+// ─── Scrollable Content Area ──────────────────────────────────────────────────
+
+@mixin card-content($max-height: 500px, $padding: 16px) {
+  padding: $padding;
+  max-height: $max-height;
+  overflow-y: auto;
+  background: var(--bg-page);
+}
+
+// ─── Footer with Button Pair ──────────────────────────────────────────────────
+
+@mixin card-footer($padding: 16px) {
+  display: flex;
+  gap: 12px;
+  padding: $padding;
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border-light);
+}
+
+@mixin btn-base {
+  flex: 1;
+  height: 44px;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+}
+
+@mixin btn-cancel {
+  @include btn-base;
+  background: var(--bg-hover);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-light);
+
+  &:hover {
+    background: var(--bg-active);
+    border-color: var(--border-normal);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+  }
+}
+
+@mixin btn-confirm {
+  @include btn-base;
+  background: var(--gradient-primary);
+  color: white;
+
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(0);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+}
+
+// ─── Selector Grid (DeliveryCard / AddressCard / SalesUnitCard / QueryCard) ──
+
+@mixin selector-card-base {
+  @include card-base(12px, var(--shadow-sm));
+  padding: 16px;
+  min-width: 280px;
+}
+
+@mixin selector-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+@mixin selector-grid($min-col: 120px) {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax($min-col, 1fr));
+  gap: 10px;
+}
+
+@mixin selector-item($padding: 16px 12px) {
+  background: var(--bg-secondary);
+  border: 2px solid var(--border-light);
+  border-radius: 10px;
+  padding: $padding;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  user-select: none;
+
+  &:hover {
+    border-color: var(--primary-color);
+    background: rgba(102, 126, 234, 0.1);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+  }
+
+  &:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 6px rgba(102, 126, 234, 0.15);
+  }
+}
+
+@mixin selector-label {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+@mixin selector-code {
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-family: 'Courier New', monospace;
+}
+
+@mixin selector-icon {
+  font-size: 28px;
+  line-height: 1;
+}
+
+// ─── Selector Cancel Link ──────────────────────────────────────────────────
+.card-cancel {
+  text-align: center;
+  margin-top: 12px;
+  font-size: 13px;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  transition: color 0.15s;
+  user-select: none;
+
+  &:hover {
+    color: var(--text-secondary);
+  }
+  &:active {
+    opacity: 0.7;
+  }
+}
+
+@mixin selector-card-mobile($root) {
+  @media (max-width: 768px) {
+    #{$root} {
+      min-width: auto;
+      padding: 12px;
+    }
+
+    .card-grid {
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      gap: 8px;
+    }
+
+    .card-item {
+      padding: 12px 8px;
+    }
+
+    .card-icon {
+      font-size: 24px;
+    }
+
+    .card-label {
+      font-size: 14px;
+    }
+
+    .card-code {
+      font-size: 11px;
+    }
+  }
+}
+
+// ─── Product Item Row (shared by OrderConfirmation / ProductCard / Search) ────
+
+@mixin product-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+@mixin product-item {
+  background: var(--bg-container);
+  border: 1px solid var(--border-light);
+  border-radius: 12px;
+  padding: 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: var(--primary-color);
+    box-shadow: var(--shadow-sm);
+    transform: translateY(-1px);
+  }
+}
+
+@mixin product-index {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--gradient-primary);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+@mixin product-info {
+  flex: 1;
+  min-width: 0;
+}
+
+@mixin product-name($size: 15px) {
+  font-size: $size;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@mixin product-meta {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 12px;
+}
+
+@mixin product-code {
+  color: var(--text-secondary);
+  background: var(--bg-secondary);
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-family: monospace;
+}
+
+// ─── Info Row (shared by OrderConfirmation / OrderDetail / OrderList) ─────────
+
+@mixin info-label {
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+@mixin info-value {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+@mixin info-value-amount {
+  color: #e6a23c;
+}
+
+// ─── Section Title ────────────────────────────────────────────────────────────
+
+@mixin section-title($size: 14px) {
+  font-size: $size;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 12px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+// ─── Card Actions Bar (OrderDetail / OrderList) ──────────────────────────────
+
+@mixin card-actions {
+  padding: 10px 16px;
+  text-align: center;
+  border-top: 1px solid var(--border-light);
+  background: var(--bg-secondary, #f8f9fa);
+}

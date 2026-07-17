@@ -3,7 +3,9 @@
     "allow": [
       "Bash(mkdir -p /Users/mythchow/Desktop/myth/ai/aix-chat/packages/chat-ui/.claude)",
       "Bash(cp -r /Users/mythchow/Desktop/sunda/ai/fastify-vercel/examples/web/.claude/skills /Users/mythchow/Desktop/myth/ai/aix-chat/packages/chat-ui/.claude/)",
-      "Bash(node scripts/link-skills.js)"
+      "Bash(node scripts/link-skills.js)",
+      "Bash(cat /Users/mythchow/Desktop/myth/ai/aix-chat/.npmrc 2>/dev/null; echo \"---\"; cat /Users/mythchow/Desktop/myth/ai/aix-chat/packages/chat-ui/.npmrc 2>/dev/null; echo \"---\"; cat ~/.npmrc 2>/dev/null)",
+      "Read(//Users/mythchow/**)"
     ]
   }
 }

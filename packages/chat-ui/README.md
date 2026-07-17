@@ -1,14 +1,16 @@
 # aix-chat
 
-开箱即用的 Vue 3 AI 聊天组件。支持流式响应、自定义卡片、语音输入、图片上传、明暗主题。
+Drop-in Vue 3 AI chat component. Streaming responses, custom cards, voice input, image upload, light/dark theme.
 
-## 安装
+[中文文档](./README.zh-CN.md)
+
+## Install
 
 ```bash
 npm install aix-chat
 ```
 
-## 最简用法
+## Quick Start
 
 ```vue
 <script setup>
@@ -21,9 +23,9 @@ import 'aix-chat/style.css'
 </template>
 ```
 
-三行代码，一个完整的聊天界面就跑起来了。
+That's it — three lines and you have a full chat UI.
 
-## 完整示例
+## Full Example
 
 ```vue
 <script setup>
@@ -41,75 +43,75 @@ const headers = {
     agent-id="order-assistant"
     api-base="http://localhost:3000"
     :headers="headers"
-    assistant-name="订单助手"
+    assistant-name="Order Assistant"
     assistant-avatar="/ai-avatar.png"
-    user-name="张三"
+    user-name="Alice"
     :tools="tools"
-    system-prompt="你是一个专业的订单助手。"
+    system-prompt="You are a professional order assistant."
     :welcome="{
-      text: '你好！有什么可以帮你的？',
+      text: 'Hi! How can I help you?',
       quickReplies: [
-        { label: '下订单', value: '我想下一个新订单' },
-        { label: '查订单', value: '帮我查最近的订单' }
+        { label: 'Place Order', value: 'I want to place a new order' },
+        { label: 'Check Order', value: 'Check my recent orders' }
       ]
     }"
     :enable-voice="true"
     :enable-image-upload="true"
     :enable-reasoning="true"
-    input-placeholder="请输入您的问题..."
+    input-placeholder="Type your question..."
   />
 </template>
 ```
 
 ## Props
 
-#### 必填
+#### Required
 
-| Prop | 类型 | 说明 |
-|------|------|------|
-| `agent-id` | `string` | Agent 标识符 |
+| Prop | Type | Description |
+|------|------|-------------|
+| `agent-id` | `string` | Agent identifier |
 
-#### API 配置
+#### API Config
 
-| Prop | 类型 | 默认值 | 说明 |
-|------|------|--------|------|
-| `api-base` | `string` | `''` | API 基础地址 |
-| `api-endpoint` | `string` | `'/api/agent/chat'` | API 端点路径 |
-| `headers` | `Record<string, string> \| () => Record<string, string>` | `{}` | 请求头（支持函数，每次请求时调用） |
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `api-base` | `string` | `''` | API base URL |
+| `api-endpoint` | `string` | `'/api/agent/chat'` | API endpoint path |
+| `headers` | `Record<string, string> \| () => Record<string, string>` | `{}` | Request headers (supports function, called per request) |
 
-#### 外观
+#### Appearance
 
-| Prop | 类型 | 默认值 | 说明 |
-|------|------|--------|------|
-| `assistant-name` | `string` | `''` | 助手名称 |
-| `assistant-avatar` | `string` | `''` | 助手头像 URL |
-| `user-name` | `string` | `''` | 用户名称 |
-| `user-avatar` | `string` | `''` | 用户头像 URL |
-| `theme` | `'light' \| 'dark' \| 'auto'` | `'auto'` | 主题 |
-| `show-header` | `boolean` | `true` | 显示头部 |
-| `input-placeholder` | `string` | `''` | 输入框占位符 |
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `assistant-name` | `string` | `''` | Assistant display name |
+| `assistant-avatar` | `string` | `''` | Assistant avatar URL |
+| `user-name` | `string` | `''` | User display name |
+| `user-avatar` | `string` | `''` | User avatar URL |
+| `theme` | `'light' \| 'dark' \| 'auto'` | `'auto'` | Color theme |
+| `show-header` | `boolean` | `true` | Show header bar |
+| `input-placeholder` | `string` | `''` | Input placeholder text |
 
-#### 功能开关
+#### Feature Toggles
 
-| Prop | 类型 | 默认值 | 说明 |
-|------|------|--------|------|
-| `enable-voice` | `boolean` | `true` | 语音输入 |
-| `enable-image-upload` | `boolean` | `true` | 图片上传 |
-| `enable-reset` | `boolean` | `true` | 重置对话按钮 |
-| `enable-reasoning` | `boolean` | `true` | 思考过程展示 |
-| `max-image-size` | `number` | `5242880` | 最大图片大小（字节） |
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `enable-voice` | `boolean` | `true` | Voice input |
+| `enable-image-upload` | `boolean` | `true` | Image upload |
+| `enable-reset` | `boolean` | `true` | Reset conversation button |
+| `enable-reasoning` | `boolean` | `true` | Show thinking process |
+| `max-image-size` | `number` | `5242880` | Max image size in bytes |
 
-#### 内容与工具
+#### Content & Tools
 
-| Prop | 类型 | 说明 |
-|------|------|------|
-| `system-prompt` | `string` | 系统提示词 |
-| `welcome` | `{ text: string, quickReplies?: Array<{ label: string, value: string }> }` | 欢迎消息 |
-| `tools` | `ToolConfig[] \| defineTools()` | 工具定义（见下方） |
+| Prop | Type | Description |
+|------|------|-------------|
+| `system-prompt` | `string` | System prompt |
+| `welcome` | `{ text: string, quickReplies?: Array<{ label: string, value: string }> }` | Welcome message |
+| `tools` | `ToolConfig[] \| defineTools()` | Tool definitions (see below) |
 
-## 自定义工具 & 卡片
+## Custom Tools & Cards
 
-用 `defineTools()` 定义工具 — AI 调用工具时，自动渲染你指定的 Vue 卡片组件。
+Use `defineTools()` to define tools — when the AI invokes a tool, your Vue card component renders automatically.
 
 ```ts
 import { defineTools } from 'aix-chat'
@@ -118,7 +120,7 @@ import OptionCard from './OptionCard.vue'
 export const tools = defineTools([
   {
     name: 'showOptions',
-    description: '展示选项让用户选择',
+    description: 'Show options for user to choose',
     parameters: {
       type: 'object',
       properties: {
@@ -135,11 +137,11 @@ export const tools = defineTools([
 ])
 ```
 
-然后在 `ChatApp` 上传入 `:tools="tools"` 即可。AI 决定调用工具时，`OptionCard` 组件会自动渲染在聊天气泡中。
+Pass `:tools="tools"` to `<ChatApp>`. When the AI calls the tool, `OptionCard` renders inline in the chat bubble.
 
-## 其他用法
+## Alternative Usage
 
-### `mountChat()` — 一行挂载（无需 Vue SFC）
+### `mountChat()` — One-liner mount (no Vue SFC needed)
 
 ```ts
 import { mountChat } from 'aix-chat'
@@ -151,11 +153,11 @@ const { unmount } = mountChat('#app', {
 })
 ```
 
-适合快速验证、非 Vue 项目、或嵌入式场景。
+Great for quick prototypes, non-Vue projects, or embedding into existing pages.
 
-### `createChat()` — 完全自定义 UI
+### `createChat()` — Full custom UI
 
-如果你想自己画界面，只要聊天逻辑：
+Build your own UI, just use the chat logic:
 
 ```ts
 import { createChat } from 'aix-chat'
@@ -164,20 +166,20 @@ const { chat, sendMessage, chatBusy, pendingToolCall, resolve } = createChat({
   agentId: 'my-agent',
   apiBase: 'http://localhost:3000',
   tools: tools.schemas,
-  onToolCall: async (name, args) => { /* 自己处理工具调用 */ }
+  onToolCall: async (name, args) => { /* handle tool calls yourself */ }
 })
 
-await sendMessage({ text: '你好' })
+await sendMessage({ text: 'Hello' })
 ```
 
-## 样式定制
+## Style Customization
 
 ```scss
-// 导入卡片样式 mixin
+// Import card style mixins
 @use 'aix-chat/styles/chat-card';
 ```
 
-通过 `./styles/*` 可以引用更多源样式文件：
+More source styles available via `./styles/*`:
 
 ```ts
 import 'aix-chat/styles/variables'
@@ -185,43 +187,43 @@ import 'aix-chat/styles/variables'
 
 ## Claude Code Skills
 
-安装后，Claude Code Skills 会自动链接到你项目的 `.claude/skills` 目录。
+After installation, Claude Code Skills are automatically linked to your project's `.claude/skills` directory.
 
-**不会写代码？没关系。** 在 Claude Code 里直接问：
+**Don't know how to code? No problem.** Just ask in Claude Code:
 
-- "帮我添加一个 AI 聊天卡片"
-- "怎么创建一个聊天工具？"
-- "对接后端 Agent API"
+- "Add a new AI chat card for me"
+- "How do I create a chat tool?"
+- "Connect to the backend Agent API"
 
-Claude 会自动加载 `ai-chat-integration` skill，一步步指导你完成。
+Claude will auto-load the `ai-chat-integration` skill and guide you through it step by step.
 
-如果自动链接失败，手动操作：
+If auto-linking fails, do it manually:
 
 ```bash
 mkdir -p .claude
 cp -r node_modules/aix-chat/.claude/skills .claude/
 ```
 
-## 后端 API
+## Backend API
 
-组件对接 `/api/agent/chat` 端点，发送 SSE 流式请求。请求格式：
+The component talks to the `/api/agent/chat` endpoint via SSE streaming. Request format:
 
 ```json
 {
   "agentId": "my-agent",
-  "messages": [{ "role": "user", "content": "你好" }],
+  "messages": [{ "role": "user", "content": "Hello" }],
   "tools": [...],
-  "systemPrompt": "你是助手..."
+  "systemPrompt": "You are an assistant..."
 }
 ```
 
-可用项目自带的 `packages/server`，或对接你自己的后端。
+Use the included `packages/server` or connect to your own backend.
 
-## 技术栈
+## Tech Stack
 
 - Vue 3 + TypeScript
 - AI SDK v7 (`ai` + `@ai-sdk/vue`)
-- Pinia 状态管理
+- Pinia state management
 
 ## License
 

@@ -3,7 +3,7 @@ import { ChatApp } from 'aix-chat'
 import { tools } from './tools'
 
 const headers = {
-  Authorization: `Bearer ${import.meta.env.VITE_DEV_TOKEN || 'dev-token'}`,
+  'x-api-key': import.meta.env.VITE_API_KEY,
 }
 </script>
 

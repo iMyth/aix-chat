@@ -1,107 +1,110 @@
 # AIX Chat
 
-一个简洁的 AI 聊天组件库和演示项目。提供开箱即用的 Vue 3 聊天界面，支持自定义工具、卡片组件、流式响应等功能。
+A concise AI chat component library and demo project. Provides an out-of-the-box Vue 3 chat interface with custom tools, card components, streaming responses, and more.
 
-## 项目结构
+[中文文档](./README.zh-CN.md)
+
+## Project Structure
 
 ```
 aix-chat/
 ├── packages/
-│   ├── demo/          # 订单助手演示
-│   └── server/        # 后端 API（简化版）
-├── package.json       # Monorepo 配置
+│   ├── chat-ui/       # AI chat component library (npm: aix-chat)
+│   ├── demo/          # Order assistant demo
+│   └── server/        # Backend API (simplified)
+├── package.json       # Monorepo config
 └── pnpm-workspace.yaml
 ```
 
-## 快速开始
+## Quick Start
 
-### 1. 安装依赖
+### 1. Install dependencies
 
 ```bash
 cd aix-chat
 pnpm install
 ```
 
-### 2. 启动数据库
+### 2. Start the database
 
 ```bash
-# 使用 Docker 启动 PostgreSQL
+# Start PostgreSQL with Docker
 docker-compose up -d
 
-# 验证数据库运行
+# Verify
 docker-compose ps
 ```
 
-### 3. 配置环境变量
+### 3. Configure environment
 
 ```bash
 cp .env.example .env
-# 编辑 .env，填入你的 OpenAI API Key
+# Edit .env and fill in your OpenAI API Key
 ```
 
-### 4. 启动服务
+### 4. Run the app
 
 ```bash
-# 启动后端（端口 3000）
+# Start backend (port 3000)
 pnpm dev:server
 
-# 启动前端（端口 5173）
+# Start frontend (port 5173)
 pnpm dev:ui
 ```
 
-访问 http://localhost:5173
+Visit http://localhost:5173
 
-## 核心特性
+## Core Features
 
-### 前端（aix-chat）
+### Frontend (aix-chat)
 
-- **ChatApp 组件**：完整的聊天界面，开箱即用
-- **工具定义**：通过 `defineTools` 定义工具和卡片
-- **自动处理**：卡片注册、事件路由、pending 状态全部自动
-- **响应式设计**：支持移动端和桌面端
-- **AI SDK v7**：使用最新的 `useChat` composable，支持流式响应
+- **ChatApp component**: Full chat UI, ready to use out of the box
+- **Tool definition**: Define tools and cards via `defineTools`
+- **Automatic handling**: Card registration, event routing, pending state — all handled for you
+- **Responsive design**: Mobile and desktop support
+- **AI SDK v7**: Uses the latest `useChat` composable with streaming support
 
-### 后端（aix-chat-server）
+### Backend (aix-chat-server)
 
-- **极简设计**：只有一个 `/api/agent/chat` 端点
-- **流式响应**：支持 SSE 流式输出
-- **工具支持**：接收前端工具定义，传给 AI
-- **PostgreSQL 存储**：使用 Docker 运行的 PostgreSQL 存储对话历史
+- **Minimal design**: Single `/api/agent/chat` endpoint
+- **Streaming response**: SSE streaming output
+- **Tool support**: Receives frontend tool definitions, passes them to AI
+- **PostgreSQL storage**: Persists conversation history via Docker
 
-### 数据库
+### Database
 
-项目使用 Docker 运行 PostgreSQL 数据库来持久化存储聊天记录：
+The project uses Docker to run a PostgreSQL database for persisting chat history:
 
 ```bash
-# 启动数据库
+# Start database
 docker-compose up -d
 
-# 查看数据库日志
+# View logs
 docker-compose logs -f postgres
 
-# 停止数据库
+# Stop database
 docker-compose down
 
-# 停止并删除数据
+# Stop and remove data
 docker-compose down -v
 ```
 
-数据库连接信息：
+Database credentials:
 - **Host**: localhost:5432
 - **User**: aix
 - **Password**: aix123
 - **Database**: aix_chat
 - **Connection String**: `postgresql://aix:aix123@localhost:5432/aix_chat`
 
-## 使用示例
+## Usage
 
-### 安装
+### Install the package
 
 ```bash
 npm install aix-chat
 ```
 
-### 基础用法
+### Basic usage
 
 ```vue
 <script setup>
@@ -117,7 +120,7 @@ import 'aix-chat/style.css'
 </template>
 ```
 
-### 定义工具
+### Define tools
 
 ```typescript
 import { defineTools } from 'aix-chat'
@@ -126,7 +129,7 @@ import OptionCard from './OptionCard.vue'
 export const tools = defineTools([
   {
     name: 'showOptions',
-    description: '展示选项',
+    description: 'Show options for user to choose',
     parameters: {
       type: 'object',
       properties: {
@@ -142,7 +145,7 @@ export const tools = defineTools([
 ])
 ```
 
-### 使用 ChatApp
+### Use ChatApp
 
 ```vue
 <script setup>
@@ -161,25 +164,27 @@ const headers = {
     api-base="http://localhost:3000"
     :tools="tools"
     :headers="headers"
-    system-prompt="你是助手..."
+    system-prompt="You are an assistant..."
     :welcome="{
-      text: '你好！有什么可以帮你的？',
+      text: 'Hi! How can I help you?',
       quickReplies: [
-        { label: '操作 A', value: '执行操作 A' },
-        { label: '操作 B', value: '执行操作 B' }
+        { label: 'Action A', value: 'Execute Action A' },
+        { label: 'Action B', value: 'Execute Action B' }
       ]
     }"
   />
 </template>
 ```
 
-## API 文档
+For full documentation on the chat component, see [packages/chat-ui/README.md](./packages/chat-ui/README.md).
 
-### 后端 API
+## API Reference
+
+### Backend API
 
 #### POST /api/agent/chat
 
-请求体：
+Request body:
 ```json
 {
   "agentId": "string",
@@ -189,71 +194,71 @@ const headers = {
 }
 ```
 
-响应：SSE 流式响应
+Response: SSE streaming
 
-### 前端组件
+### Frontend Component
 
 #### ChatApp Props
 
-| Prop | 类型 | 必填 | 说明 |
-|------|------|------|------|
+| Prop | Type | Required | Description |
+|------|------|----------|-------------|
 | `agentId` | `string` | ✅ | Agent ID |
-| `apiBase` | `string` | ❌ | API 基础地址（默认空，走相对路径） |
-| `apiEndpoint` | `string` | ❌ | API 端点（默认 `/api/agent/chat`） |
-| `tools` | `ToolConfig[]` | ❌ | 工具列表 |
-| `headers` | `Record<string, string> \| () => Record<string, string>` | ❌ | 请求头 |
-| `systemPrompt` | `string` | ❌ | 系统提示词 |
-| `welcome` | `{ text: string, quickReplies?: Array<{ label: string, value: string }> }` | ❌ | 欢迎消息 |
+| `apiBase` | `string` | ❌ | API base URL (default: relative) |
+| `apiEndpoint` | `string` | ❌ | API endpoint (default `/api/agent/chat`) |
+| `tools` | `ToolConfig[]` | ❌ | Tool list |
+| `headers` | `Record<string, string> \| () => Record<string, string>` | ❌ | Request headers |
+| `systemPrompt` | `string` | ❌ | System prompt |
+| `welcome` | `{ text: string, quickReplies?: Array<{ label: string, value: string }> }` | ❌ | Welcome message |
 
 ## Claude Code Skills
 
-本项目包含 Claude Code Skills，帮助你快速集成 AI 聊天功能。
+This project includes Claude Code Skills to help you integrate the AI chat quickly.
 
-安装 `aix-chat` 后，skills 会自动链接到项目的 `.claude/skills` 目录。
+After installing `aix-chat`, the skills are automatically linked to your project's `.claude/skills` directory.
 
-### 使用 Skills
+### Using Skills
 
-在 Claude Code 中，你可以直接询问：
+In Claude Code, just ask:
 
-- "如何添加 AI 聊天卡片？"
-- "怎么创建聊天工具？"
-- "如何对接后端 API？"
-- "卡片组件怎么开发？"
+- "How do I add an AI chat card?"
+- "How to create a chat tool?"
+- "How to connect to the backend Agent API?"
+- "How to develop card components?"
 
-Claude 会自动使用 `ai-chat-integration` skill 来指导你完成开发。
+Claude will automatically use the `ai-chat-integration` skill to guide you through development.
 
-### 手动启用 Skills
+### Manual Setup
 
-如果自动链接失败，可以手动复制：
+If auto-linking fails:
 
 ```bash
 mkdir -p .claude
 cp -r node_modules/aix-chat/.claude/skills .claude/
 ```
 
-## 开发
+## Development
 
 ```bash
-# 构建所有包
+# Build all packages
 pnpm build
 
-# 只构建 chat-ui
+# Build chat-ui only
 pnpm build:ui
 
-# 只构建 server
+# Build server only
 pnpm build:server
 
-# 开发模式（监听变化）
+# Dev mode (watch)
 pnpm dev:ui
 ```
 
-## 技术栈
+## Tech Stack
 
-- **前端**：Vue 3 + TypeScript + Vite
-- **AI SDK**：ai v7 + @ai-sdk/vue v4（useChat composable）
-- **后端**：Fastify + AI SDK
-- **AI**：OpenAI GPT-4
-- **Monorepo**：pnpm workspaces
+- **Frontend**: Vue 3 + TypeScript + Vite
+- **AI SDK**: ai v7 + @ai-sdk/vue v4 (useChat composable)
+- **Backend**: Fastify + AI SDK
+- **AI**: OpenAI GPT-4
+- **Monorepo**: pnpm workspaces
 
 ## License
 

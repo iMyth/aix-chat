@@ -1,6 +1,7 @@
 {
   "name": "aix-chat",
   "version": "1.0.1",
+  "description": "Vue 3 AI chat UI — streaming, custom tool cards, voice & image input, light/dark theme. Ships with Claude Code Skills.",
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",

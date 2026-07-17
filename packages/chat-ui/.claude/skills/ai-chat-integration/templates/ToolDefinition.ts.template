@@ -1,0 +1,147 @@
+/**
+ * AI 工具定义模板
+ *
+ * 用法：
+ *   1. 复制本文件到 src/demo/你的业务/tools/xxxTools.ts
+ *   2. 定义你的工具 schema 和执行逻辑
+ *   3. 在 useAgentChat.ts 里导入使用
+ *
+ * 工具会同时传给后端（让 AI 知道可以调用）和前端（渲染卡片 + 执行逻辑）
+ */
+
+import { defineTools } from '@/chat'
+// 👇 导入你的卡片组件
+// import OptionSelectorCard from '../components/OptionSelectorCard.vue'
+// import SimpleFormCard from '../components/SimpleFormCard.vue'
+
+/**
+ * 示例：选项选择工具
+ *
+ * AI 返回 { type: 'optionSelector', title: '请选择', options: [...] } 时
+ * 前端渲染 OptionSelectorCard 卡片
+ */
+const optionSelector = {
+  name: 'optionSelector',
+  description: '展示选项让用户选择',
+  parameters: {
+    type: 'object',
+    properties: {
+      title: {
+        type: 'string',
+        description: '卡片标题',
+      },
+      options: {
+        type: 'array',
+        description: '选项列表',
+        items: {
+          type: 'object',
+          properties: {
+            label: { type: 'string', description: '选项显示文本' },
+            value: { type: 'string', description: '选项值' },
+          },
+          required: ['label', 'value'],
+        },
+      },
+    },
+    required: ['title', 'options'],
+  },
+  // 👇 前端卡片组件（可选）
+  // component: OptionSelectorCard,
+
+  // 👇 参数映射：工具参数 -> 组件 props（可选）
+  // mapProps: (args) => ({
+  //   title: args.title,
+  //   options: args.options,
+  // }),
+
+  // 👇 工具执行逻辑（可选，如果需要前端执行）
+  // execute: async (args) => {
+  //   // 返回 { pending: true } 会等待用户交互
+  //   return {
+  //     pending: true,
+  //     type: 'optionSelector',
+  //     ...args,
+  //   }
+  // },
+
+  // 👇 卡片事件回调（可选）
+  // onEvent: (eventName, data) => {
+  //   console.log('Card event:', eventName, data)
+  // },
+}
+
+/**
+ * 示例：表单填写工具
+ *
+ * AI 返回 { type: 'simpleForm', fields: [...] } 时
+ * 前端渲染 SimpleFormCard 卡片
+ */
+const simpleForm = {
+  name: 'simpleForm',
+  description: '展示表单让用户填写信息',
+  parameters: {
+    type: 'object',
+    properties: {
+      title: {
+        type: 'string',
+        description: '表单标题',
+      },
+      fields: {
+        type: 'array',
+        description: '表单字段列表',
+        items: {
+          type: 'object',
+          properties: {
+            name: { type: 'string', description: '字段名' },
+            label: { type: 'string', description: '字段标签' },
+            type: {
+              type: 'string',
+              enum: ['text', 'number', 'select', 'textarea'],
+              description: '字段类型',
+            },
+            required: { type: 'boolean', description: '是否必填' },
+          },
+          required: ['name', 'label', 'type'],
+        },
+      },
+    },
+    required: ['title', 'fields'],
+  },
+  // component: SimpleFormCard,
+  // mapProps: (args) => ({
+  //   title: args.title,
+  //   fields: args.fields,
+  // }),
+  // execute: async (args) => {
+  //   return {
+  //     pending: true,
+  //     type: 'simpleForm',
+  //     ...args,
+  //   }
+  // },
+}
+
+/**
+ * 导出工具列表
+ *
+ * 在 useAgentChat.ts 里使用：
+ *   import { tools } from './tools/xxxTools'
+ *
+ *   const chat = new Chat({
+ *     ...
+ *     body: () => ({
+ *       agentId: AGENT_ID,
+ *       tools: tools.schemas,  // 👈 传给后端
+ *     }),
+ *     async onToolCall({ toolCall }) {
+ *       // 👇 路由到对应的工具执行
+ *       const result = await tools.executeTool(toolCall.toolName, toolCall.input)
+ *       if (result.pending) {
+ *         setPending(toolCall, result)
+ *         return
+ *       }
+ *       chat.addToolOutput(buildToolOutput(toolCall, result))
+ *     },
+ *   })
+ */
+export const tools = defineTools([optionSelector, simpleForm])

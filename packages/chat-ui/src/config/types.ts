@@ -25,6 +25,29 @@ export interface ChatUIConfig {
   showEmptyState?: boolean
   /** Max image file size in bytes (default: 5MB) */
   maxImageSize?: number
+  /** Theme: light / dark / auto (default: auto) */
+  theme?: 'light' | 'dark' | 'auto'
+  /** Input placeholder text */
+  inputPlaceholder?: string
+  /** Enable image upload (default: true) */
+  enableImageUpload?: boolean
+  /** Enable reset button (default: true) */
+  enableReset?: boolean
+  /** Enable reasoning/thinking display (default: true) */
+  enableReasoning?: boolean
+}
+
+export interface ChatAvatarConfig {
+  /** AI assistant name */
+  assistantName?: string
+  /** AI assistant avatar URL */
+  assistantAvatar?: string
+  /** User name */
+  userName?: string
+  /** User avatar URL */
+  userAvatar?: string
+  /** User identifier (for STT, etc.) */
+  sender?: string
 }
 
 export interface ChatConfigInput {
@@ -41,6 +64,8 @@ export interface ChatConfigInput {
   voice?: Partial<ChatVoiceConfig>
   /** UI options */
   ui?: Partial<ChatUIConfig>
+  /** Avatar / identity options */
+  avatar?: Partial<ChatAvatarConfig>
   /** Welcome message injector — called on mount and reset */
   welcome?: {
     text: string
@@ -57,5 +82,6 @@ export interface ChatConfig {
   transport: ChatTransportConfig
   voice: Required<ChatVoiceConfig>
   ui: Required<ChatUIConfig>
+  avatar: Required<ChatAvatarConfig>
   welcome?: ChatConfigInput['welcome']
 }

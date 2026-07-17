@@ -21,7 +21,8 @@
   "scripts": {
     "dev": "vite build --watch",
     "build": "vite build && tsc --emitDeclarationOnly",
-    "type-check": "vue-tsc --noEmit"
+    "type-check": "vue-tsc --noEmit",
+    "postinstall": "node scripts/link-skills.cjs"
   },
   "dependencies": {
     "@ai-sdk/vue": "^4.0.28",

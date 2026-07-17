@@ -1,10 +1,12 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, watch, inject } from 'vue'
 import ChatAvatar from './ChatAvatar.vue'
 import ChatEmptyState from './ChatEmptyState.vue'
 import ChatMessage from './ChatMessage.vue'
 import CardRenderer from '../registry/CardRenderer.vue'
 import { useAutoScroll } from '../composables/useAutoScroll'
+import { CHAT_CONFIG_KEY } from '../registry/symbols'
+import type { ChatConfig } from '../config/types'
 
 const props = defineProps<{
   messages: any[]
@@ -16,6 +18,9 @@ const emit = defineEmits<{
   (e: 'cardEvent', payload: { eventName: string; cardType: string; data: unknown }): void
   (e: 'quickReply', text: string): void
 }>()
+
+const config = inject<ChatConfig>(CHAT_CONFIG_KEY)
+const showEmptyState = config?.ui.showEmptyState ?? true
 
 const chatContainerRef = ref<HTMLElement | null>(null)
 const { userScrolledUp, scrollToBottom, delayScrollToBottom, handleScroll } = useAutoScroll(chatContainerRef)
@@ -33,7 +38,7 @@ watch(
 
 <template>
   <div class="chat-messages-container" ref="chatContainerRef" @scroll="handleScroll">
-    <ChatEmptyState v-if="!messages?.length && !pendingToolCall" />
+    <ChatEmptyState v-if="showEmptyState && !messages?.length && !pendingToolCall" />
 
     <div v-else class="messages-list">
       <ChatMessage

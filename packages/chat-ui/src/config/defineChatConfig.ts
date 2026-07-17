@@ -15,6 +15,16 @@ import type { ChatConfig, ChatConfigInput } from './types'
  *   },
  *   toolDisplayNames: { selectSaleUnit: 'tool.selectSaleUnit' },
  *   transport: { api: '/api/chat', headers: { 'x-api-key': '...' } },
+ *   avatar: {
+ *     assistantName: '订单助手',
+ *     assistantAvatar: '/ai-avatar.png',
+ *     userName: '张三',
+ *     userAvatar: '/user-avatar.png',
+ *   },
+ *   ui: {
+ *     theme: 'light',
+ *     inputPlaceholder: '请输入您的问题...',
+ *   },
  * })
  * ```
  */
@@ -45,6 +55,18 @@ export function defineChatConfig(input: ChatConfigInput): ChatConfig {
       showHeader: input.ui?.showHeader ?? true,
       showEmptyState: input.ui?.showEmptyState ?? true,
       maxImageSize: input.ui?.maxImageSize ?? 5 * 1024 * 1024,
+      theme: input.ui?.theme ?? 'auto',
+      inputPlaceholder: input.ui?.inputPlaceholder ?? '',
+      enableImageUpload: input.ui?.enableImageUpload ?? true,
+      enableReset: input.ui?.enableReset ?? true,
+      enableReasoning: input.ui?.enableReasoning ?? true,
+    },
+    avatar: {
+      assistantName: input.avatar?.assistantName ?? '',
+      assistantAvatar: input.avatar?.assistantAvatar ?? '',
+      userName: input.avatar?.userName ?? '',
+      userAvatar: input.avatar?.userAvatar ?? '',
+      sender: input.avatar?.sender ?? '',
     },
     welcome: input.welcome,
   }

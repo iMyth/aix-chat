@@ -1,26 +1,27 @@
 <script setup lang="ts">
-const props = withDefaults(
-  defineProps<{
-    type?: 'assistant' | 'user'
-    size?: number
-    /** Custom assistant avatar URL */
-    assistantAvatar?: string
-    /** Custom user avatar URL */
-    userAvatar?: string
-  }>(),
-  {
-    type: 'assistant',
-    size: 36,
-    assistantAvatar: '',
-    userAvatar: '',
-  },
-)
+import { computed, inject } from 'vue'
+import { CHAT_CONFIG_KEY } from '../registry/symbols'
+import type { ChatConfig } from '../config/types'
+
+const props = withDefaults(defineProps<{
+  type?: 'assistant' | 'user'
+  size?: number
+}>(), {
+  type: 'assistant',
+  size: 36,
+})
+
+const config = inject<ChatConfig>(CHAT_CONFIG_KEY)
+
+const avatarUrl = computed(() => {
+  if (props.type === 'assistant') return config?.avatar.assistantAvatar || ''
+  return config?.avatar.userAvatar || ''
+})
 </script>
 
 <template>
   <div class="avatar" :class="type === 'assistant' ? 'ai-avatar' : 'user-avatar'" :style="{ width: `${size}px`, height: `${size}px` }">
-    <img v-if="type === 'assistant' && assistantAvatar" :src="assistantAvatar" class="avatar-img" />
-    <img v-else-if="type === 'user' && userAvatar" :src="userAvatar" class="avatar-img" />
+    <img v-if="avatarUrl" :src="avatarUrl" class="avatar-img" />
     <IconMdiRobot v-else-if="type === 'assistant'" class="avatar-icon" />
     <IconMdiAccount v-else class="avatar-icon" />
   </div>

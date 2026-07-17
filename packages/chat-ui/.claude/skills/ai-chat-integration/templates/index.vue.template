@@ -1,0 +1,136 @@
+<script setup lang="ts">
+import { ref, computed, onMounted } from 'vue'
+import { Chat } from '@ai-sdk/vue'
+import { lastAssistantMessageIsCompleteWithToolCalls } from 'ai'
+import {
+  AiChatProvider,
+  ChatMessageList,
+  ChatInput,
+  usePendingToolCall,
+  ImageStrippingTransport,
+} from '@/chat'
+import { chatConfig } from '../chatConfig'
+
+// ─── 你的业务 Composables ──────────────────────────────────────────
+// import { useOrderStore } from '@/composables/useOrderStore'
+// import { useAITools } from '@/composables/useAITools'
+// const orderStore = useOrderStore()
+// const { tools } = useAITools()
+
+// ── Chat 实例 ────────────────────────────────────────────────────
+const toolExecutingCount = ref(0)
+
+const chat = new Chat({
+  transport: new ImageStrippingTransport({
+    api: chatConfig.transport.api,
+    headers: chatConfig.transport.headers,
+    body: () => chatConfig.transport.buildBody!({ context: '', sender: '' }),
+  }),
+  sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithToolCalls,
+  onError(error) {
+    console.error('[ChatView] Chat error:', error)
+    ElMessage.error(`聊天错误: ${error.message}`)
+  },
+  async onToolCall({ toolCall }) {
+    toolExecutingCount.value++
+    try {
+      // const tool = tools[toolCall.toolName]
+      // if (!tool?.execute) { ... }
+      // const result = await tool.execute(toolCall.input)
+      // if (result.pending) { setPending(toolCall, result); return }
+      // chat.addToolOutput(buildToolOutput(toolCall, result))
+    } finally {
+      toolExecutingCount.value--
+    }
+  },
+})
+
+const chatBusy = computed(() => chat.status !== 'ready' && chat.status !== 'error')
+const { pendingToolCall, resolving, buildToolOutput, setPending, resolve } = usePendingToolCall(chat)
+
+// ─── Card Event 路由 ──────────────────────────────────────────────
+const EVENT_HANDLER_MAP: Record<string, (payload: any) => void> = {
+  // select: (item) => { resolve({ success: true, selected: item }) },
+  // confirm: (data) => { resolve({ success: true, formData: data }) },
+  // cancel: () => { resolve({ success: true, cancelled: true }) },
+  // close: () => { resolve({ success: true }) },
+  // viewDetail: (item) => { resolve({ success: true }) },
+}
+
+function routeCardEvent({ eventName, cardType, data }: { eventName: string; cardType: string; data: unknown }) {
+  const handler = EVENT_HANDLER_MAP[eventName]
+  if (handler) {
+    handler(data)
+  } else {
+    console.warn('[ChatView] Unknown card event:', eventName, cardType)
+  }
+}
+
+// ─── 消息发送 ─────────────────────────────────────────────────────
+async function handleSendMessage(content: { text: string; files: FileList | null }) {
+  if (chatBusy.value || resolving.value || toolExecutingCount.value > 0) return
+  try {
+    await chat.sendMessage({ text: content.text, files: content.files })
+  } catch (err) {
+    console.error('[ChatView] 发送失败:', err)
+  }
+}
+
+function handleQuickReply(text: string) {
+  handleSendMessage({ text, files: null })
+}
+
+function handleResetChat() {
+  chat.stop()
+  if (pendingToolCall.value) pendingToolCall.value = null
+  toolExecutingCount.value = 0
+  resolving.value = false
+  // orderStore.resetAll()
+  chat.messages = []
+  injectWelcomeMessage()
+}
+
+// ─── 欢迎消息 ─────────────────────────────────────────────────────
+function injectWelcomeMessage() {
+  if (!chatConfig.welcome) return
+  chat.messages = [{
+    id: `welcome-${Date.now()}`,
+    role: 'assistant',
+    parts: [{ type: 'text', text: chatConfig.welcome.text }],
+    data: { quickReplies: chatConfig.welcome.quickReplies },
+  }]
+}
+
+onMounted(() => {
+  if (chat.messages.length === 0) injectWelcomeMessage()
+})
+</script>
+
+<template>
+  <div class="chat-page">
+    <AiChatProvider :config="chatConfig">
+      <div class="chat-container">
+        <ChatMessageList
+          :messages="chat.messages"
+          :is-loading="chatBusy"
+          :pending-tool-call="pendingToolCall"
+          @card-event="routeCardEvent"
+          @quick-reply="handleQuickReply"
+        />
+        <ChatInput
+          :pending-tool-call="Boolean(pendingToolCall)"
+          :disabled="chatBusy || resolving || toolExecutingCount > 0"
+          @send="handleSendMessage"
+          @reset="handleResetChat"
+        />
+      </div>
+    </AiChatProvider>
+  </div>
+</template>
+
+<style scoped>
+@import '@/chat/styles/theme.css';
+
+.chat-page { position: fixed; inset: 0; background: var(--bg-page); }
+.chat-container { display: flex; flex-direction: column; width: 100%; height: 100%; }
+</style>

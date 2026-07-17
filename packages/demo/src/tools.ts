@@ -77,16 +77,29 @@ export const tools = defineTools([
         description: opt.description,
       })),
     }),
-    execute: async (args: any) => ({
-      pending: true,
-      type: 'showQuickActions',
-      title: args.title || '请选择操作',
-      options: args.options || [
-        { label: '查看订单', value: 'view_orders', description: '查询历史订单' },
-        { label: '下新订单', value: 'new_order', description: '创建新订单' },
-        { label: '联系客服', value: 'contact_support' },
-      ],
-    }),
+    execute: async (args: any) => {
+      // 解析 options 如果是字符串
+      let options = args.options
+      if (typeof options === 'string') {
+        try {
+          options = JSON.parse(options)
+        } catch (e) {
+          console.error('Failed to parse options:', e)
+          options = []
+        }
+      }
+
+      return {
+        pending: true,
+        type: 'showQuickActions',
+        title: args.title || '请选择操作',
+        options: options || [
+          { label: '查看订单', value: 'view_orders', description: '查询历史订单' },
+          { label: '下新订单', value: 'new_order', description: '创建新订单' },
+          { label: '联系客服', value: 'contact_support' },
+        ],
+      }
+    },
     onEvent: (eventName: string, data: any) => {
       console.log('[showQuickActions] Event:', eventName, data)
     },
@@ -121,16 +134,29 @@ export const tools = defineTools([
       title: args.title,
       fields: args.fields,
     }),
-    execute: async (args: any) => ({
-      pending: true,
-      type: 'showOrderForm',
-      title: args.title || '填写订单信息',
-      fields: args.fields || [
-        { key: 'name', label: '姓名', type: 'text', placeholder: '请输入姓名', required: true },
-        { key: 'phone', label: '电话', type: 'tel', placeholder: '请输入联系电话', required: true },
-        { key: 'address', label: '地址', type: 'text', placeholder: '请输入详细地址' },
-      ],
-    }),
+    execute: async (args: any) => {
+      // 解析 fields 如果是字符串（AI 模型有时会返回字符串而不是数组）
+      let fields = args.fields
+      if (typeof fields === 'string') {
+        try {
+          fields = JSON.parse(fields)
+        } catch (e) {
+          console.error('Failed to parse fields:', e)
+          fields = []
+        }
+      }
+
+      return {
+        pending: true,
+        type: 'showOrderForm',
+        title: args.title || '填写订单信息',
+        fields: fields || [
+          { key: 'name', label: '姓名', type: 'text', placeholder: '请输入姓名', required: true },
+          { key: 'phone', label: '电话', type: 'tel', placeholder: '请输入联系电话', required: true },
+          { key: 'address', label: '地址', type: 'text', placeholder: '请输入详细地址' },
+        ],
+      }
+    },
     onEvent: (eventName: string, data: any) => {
       console.log('[showOrderForm] Event:', eventName, data)
     },

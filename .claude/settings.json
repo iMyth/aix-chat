@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir -p /Users/mythchow/Desktop/myth/ai/aix-chat/packages/chat-ui/.claude)",
+      "Bash(cp -r /Users/mythchow/Desktop/sunda/ai/fastify-vercel/examples/web/.claude/skills /Users/mythchow/Desktop/myth/ai/aix-chat/packages/chat-ui/.claude/)",
+      "Bash(node scripts/link-skills.js)"
+    ]
+  }
+}

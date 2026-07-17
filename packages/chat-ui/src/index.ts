@@ -19,6 +19,7 @@ export type {
   ChatTransportConfig,
   ChatVoiceConfig,
   ChatUIConfig,
+  ChatAvatarConfig,
 } from './config/types'
 
 // ─── Provider ────────────────────────────────────────────────────────
@@ -34,6 +35,7 @@ export { useAutoScroll } from './composables/useAutoScroll'
 
 // ─── High-level API ──────────────────────────────────────────────────
 export { default as ChatApp } from './ChatApp.vue'
+export type { ChatAppProps } from './ChatApp.types'
 export { mountChat, type MountChatOptions } from './mountChat'
 export { defineTools, createChat } from './tools'
 export type { ToolConfig, CreateChatOptions, ToolDefinition } from './tools'

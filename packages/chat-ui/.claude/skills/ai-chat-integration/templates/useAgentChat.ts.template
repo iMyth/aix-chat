@@ -1,0 +1,149 @@
+/**
+ * useAgentChat — 复制即用的 Agent 聊天 composable
+ *
+ * 用法：
+ *   1. 复制本文件到 src/demo/你的业务/composables/useAgentChat.ts
+ *   2. 改下面两处带 👈 的注释
+ *   3. 在 index.vue 里 import 使用
+ *
+ * 它会帮你处理：
+ *   - 流式聊天（接 /api/agent/chat）
+ *   - 自动带上 Authorization header
+ *   - 把后端返回的 conversationId 保存下来，下一轮带回（续接对话）
+ *   - 续接历史对话（传 conversationId 进来即可）
+ */
+
+import { ref, computed } from 'vue'
+import { Chat } from '@ai-sdk/vue'
+import { lastAssistantMessageIsCompleteWithToolCalls } from 'ai'
+import {
+  AiChatProvider,
+  ChatMessageList,
+  ChatInput,
+  usePendingToolCall,
+  ImageStrippingTransport,
+  defineChatConfig,
+} from '@/chat'
+// 👇 改成你自己的 chatConfig
+import { chatConfig } from '../chatConfig'
+
+// ─────────────────────────────────────────────────────────────
+// 👇 改这里 1：你的 agentId（找后端要，比如 'mock-agent'、'sales-agent'）
+const AGENT_ID = 'mock-agent'
+
+// 👇 改这里 2：取当前用户 token 的函数
+function getToken(): string {
+  // 例子 1：从 localStorage 读
+  // return localStorage.getItem('token') ?? ''
+
+  // 例子 2：从 Pinia store 读
+  // const userStore = useUserStore()
+  // return userStore.token ?? ''
+
+  return ''
+}
+
+// 👇 改这里 3（可选）：你的业务自定义工具
+// import { useAITools } from '@/composables/useAITools'
+// const { tools } = useAITools()
+// ─────────────────────────────────────────────────────────────
+
+export function useAgentChat(opts: { conversationId?: string } = {}) {
+  // ── 对话 id：后端首次返回后保存，后续请求带回实现续接 ────────────
+  const conversationId = ref<string | undefined>(opts.conversationId)
+
+  // ── 构造 transport：带 Authorization + agentId ─────────────
+  const transport = new ImageStrippingTransport({
+    api: `${import.meta.env.VITE_API_BASE}/api/agent/chat`,
+    headers: () => ({
+      Authorization: `Bearer ${getToken()}`,
+    }),
+    body: () => ({
+      agentId: AGENT_ID,
+      // 续接历史对话时带上 id
+      ...(conversationId.value ? { conversationId: conversationId.value } : {}),
+    }),
+  })
+
+  // ── Chat 实例 ─────────────────────────────────────────────
+  const toolExecutingCount = ref(0)
+
+  const chat = new Chat({
+    transport,
+    sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithToolCalls,
+    onResponse(res: Response) {
+      // 👇 关键：把后端返回的 conversationId 保存下来
+      const cid = res.headers.get('X-Conversation-Id')
+      if (cid) conversationId.value = cid
+    },
+    onError(err) {
+      console.error('[useAgentChat] Chat error:', err)
+      // 👇 改这里：用你项目的提示方式（Element Plus / Ant Design / ...）
+      // ElMessage.error(`聊天错误: ${err.message}`)
+    },
+    async onToolCall({ toolCall }) {
+      toolExecutingCount.value++
+      try {
+        // 👇 如果你注册了业务工具，在这里路由
+        // const tool = tools[toolCall.toolName]
+        // if (tool?.execute) {
+        //   const result = await tool.execute(toolCall.input)
+        //   if (result.pending) { setPending(toolCall, result); return }
+        //   chat.addToolOutput(buildToolOutput(toolCall, result))
+        // }
+      } finally {
+        toolExecutingCount.value--
+      }
+    },
+  })
+
+  const chatBusy = computed(() => chat.status !== 'ready' && chat.status !== 'error')
+  const { pendingToolCall, resolving, buildToolOutput, setPending, resolve } = usePendingToolCall(chat)
+
+  // ── 消息发送 ──────────────────────────────────────────────
+  async function handleSendMessage(content: { text: string; files: FileList | null }) {
+    if (chatBusy.value || resolving.value || toolExecutingCount.value > 0) return
+    try {
+      await chat.sendMessage({ text: content.text, files: content.files })
+    } catch (err) {
+      console.error('[useAgentChat] 发送失败:', err)
+    }
+  }
+
+  function handleQuickReply(text: string) {
+    handleSendMessage({ text, files: null })
+  }
+
+  function handleResetChat() {
+    chat.stop()
+    if (pendingToolCall.value) pendingToolCall.value = null
+    toolExecutingCount.value = 0
+    resolving.value = false
+    chat.messages = []
+    // 注意：重置不清 conversationId，如果你想"完全新开"，把下一行注释打开
+    // conversationId.value = undefined
+  }
+
+  // ── 切换历史对话（在外部调用即可）────────────────────────
+  function switchConversation(id: string) {
+    conversationId.value = id
+    chat.messages = []
+    // 你可以再调后端 /api/agent/conversations/:id/messages 拿历史填回 chat.messages
+  }
+
+  return {
+    chat,
+    chatBusy,
+    pendingToolCall,
+    resolving,
+    conversationId,
+    handleSendMessage,
+    handleQuickReply,
+    handleResetChat,
+    switchConversation,
+    // 高级：暴露给卡片事件路由用
+    buildToolOutput,
+    setPending,
+    resolve,
+  }
+}

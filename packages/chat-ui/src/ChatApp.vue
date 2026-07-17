@@ -6,17 +6,21 @@ import ChatMessageList from './components/ChatMessageList.vue'
 import ChatInput from './components/ChatInput.vue'
 import AiChatProvider from './provider/AiChatProvider.vue'
 import { defineChatConfig } from './config/defineChatConfig'
+import type { ChatAppProps } from './ChatApp.types'
 
-const props = defineProps<{
-  agentId: string
-  tools?: ToolConfig[] | { tools: ToolConfig[]; [key: string]: any }
-  systemPrompt?: string
-  headers?: Record<string, string> | (() => Record<string, string>)
-  welcome?: {
-    text: string
-    quickReplies?: Array<{ label: string; value: string }>
-  }
-}>()
+const props = defineProps<ChatAppProps>()
+
+// 默认值
+const apiBase = props.apiBase ?? ''
+const apiEndpoint = props.apiEndpoint ?? '/api/agent/chat'
+const showHeader = props.showHeader ?? true
+const showEmptyState = props.showEmptyState ?? true
+const enableVoice = props.enableVoice ?? true
+const enableImageUpload = props.enableImageUpload ?? true
+const enableReset = props.enableReset ?? true
+const enableReasoning = props.enableReasoning ?? true
+const maxImageSize = props.maxImageSize ?? 5 * 1024 * 1024
+const theme = props.theme ?? 'auto'
 
 // 支持两种格式：直接数组或 defineTools 返回的对象
 const toolsArray = Array.isArray(props.tools)
@@ -26,6 +30,8 @@ const toolsArray = Array.isArray(props.tools)
 // 创建 chat 实例
 const chatOptions: CreateChatOptions = {
   agentId: props.agentId,
+  apiBase,
+  apiEndpoint,
   systemPrompt: props.systemPrompt,
   headers: props.headers,
   tools: toolsArray.map((t: ToolConfig) => ({
@@ -40,10 +46,27 @@ const chatOptions: CreateChatOptions = {
       return { error: `Tool not found: ${toolName}` }
     }
 
+    // 解析 args 中的 JSON 字符串字段（AI 模型有时会返回字符串而不是对象/数组）
+    const parsedArgs = { ...args }
+    for (const key in parsedArgs) {
+      const value = parsedArgs[key]
+      if (typeof value === 'string') {
+        // 尝试解析看起来像 JSON 的字符串
+        if ((value.startsWith('[') && value.endsWith(']')) ||
+            (value.startsWith('{') && value.endsWith('}'))) {
+          try {
+            parsedArgs[key] = JSON.parse(value)
+          } catch (e) {
+            // 解析失败，保持原值
+          }
+        }
+      }
+    }
+
     // 如果有 execute 函数，执行它
     if (tool.execute) {
       try {
-        const result = await tool.execute(args)
+        const result = await tool.execute(parsedArgs)
         // 如果结果包含 pending: true，返回给 UI 等待交互
         if (result?.pending) {
           return result
@@ -61,7 +84,7 @@ const chatOptions: CreateChatOptions = {
       return {
         pending: true,
         type: tool.name,
-        ...(tool.mapProps ? tool.mapProps(args) : args),
+        ...(tool.mapProps ? tool.mapProps(parsedArgs) : parsedArgs),
       }
     }
 
@@ -87,6 +110,31 @@ const chatConfig = defineChatConfig({
       toolsArray.filter((t: ToolConfig) => t.component).map((t: ToolConfig) => [t.name, t.component!])
     ),
     completed: {},
+  },
+  transport: {
+    api: `${apiBase}${apiEndpoint}`,
+    headers: typeof props.headers === 'function' ? props.headers() : props.headers,
+  },
+  voice: {
+    enabled: enableVoice,
+    sender: props.sender,
+  },
+  ui: {
+    showHeader,
+    showEmptyState,
+    maxImageSize,
+    theme,
+    inputPlaceholder: props.inputPlaceholder,
+    enableImageUpload,
+    enableReset,
+    enableReasoning,
+  },
+  avatar: {
+    assistantName: props.assistantName,
+    assistantAvatar: props.assistantAvatar,
+    userName: props.userName,
+    userAvatar: props.userAvatar,
+    sender: props.sender,
   },
   welcome: props.welcome,
 })

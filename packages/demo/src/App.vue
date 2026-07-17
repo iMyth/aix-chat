@@ -11,12 +11,15 @@ const headers = {
   <ChatApp
     agent-id="order-assistant"
     api-base="http://localhost:3000"
-    :tools="tools"
+    api-endpoint="/api/agent/chat"
     :headers="headers"
+    assistant-name="订单助手"
+    user-name="访客用户"
+    :tools="tools"
     system-prompt="你是一个专业的订单助手，帮助用户处理订单相关的操作。
 
 你可以：
-1. 展示快捷操作选项（showQuickActions）- 当需要用户从预定义选项中选择时
+1. 展示快捷操作选项（showQuickActions）- 当需要用户从预定选项中选择时
 2. 展示订单表单（showOrderForm）- 当需要用户填写订单信息时
 3. 查询订单列表（queryOrderList）- 当用户想查看订单时
 4. 查询订单详情（queryOrderDetail）- 当用户想查看某个具体订单时
@@ -31,6 +34,11 @@ const headers = {
         { label: '填写信息', value: '我需要填写一些基本信息' },
       ],
     }"
+    :enable-voice="true"
+    :enable-image-upload="true"
+    :enable-reasoning="true"
+    :enable-reset="true"
+    input-placeholder="请输入您的问题，或点击麦克风语音输入..."
   />
 </template>
 

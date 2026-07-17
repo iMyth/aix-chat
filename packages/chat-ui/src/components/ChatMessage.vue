@@ -83,6 +83,9 @@ const toggleReasoning = (index: number) => {
   reasoningCollapsed.value[index] = !reasoningCollapsed.value[index]
 }
 const isCollapsed = (index: number) => reasoningCollapsed.value[index] !== false
+
+// 从 config 读取配置
+const enableReasoning = config?.ui.enableReasoning ?? true
 </script>
 
 <template>
@@ -93,7 +96,7 @@ const isCollapsed = (index: number) => reasoningCollapsed.value[index] !== false
       <div class="message-content">
         <div v-for="(part, partIndex) in messageParts" :key="`${message.id}-${part.type}-${partIndex}`">
           <!-- Reasoning block -->
-          <div v-if="isReasoningPart(part) && message.role === 'assistant'" class="reasoning-block">
+          <div v-if="enableReasoning && isReasoningPart(part) && message.role === 'assistant'" class="reasoning-block">
             <button class="reasoning-toggle" @click="toggleReasoning(partIndex)">
               <IconMdiBrain class="reasoning-icon" />
               <span class="reasoning-label">Thinking...</span>

@@ -15,7 +15,6 @@ const config = inject<ChatConfig>(CHAT_CONFIG_KEY)
 const props = defineProps<{
   pendingToolCall?: boolean
   disabled?: boolean
-  sender?: string
 }>()
 
 const emit = defineEmits<{
@@ -24,7 +23,23 @@ const emit = defineEmits<{
 }>()
 
 const input = ref('')
-const voiceMode = ref(false)
+
+// 从 config 读取配置
+const sender = config?.avatar.sender || ''
+const enableVoice = config?.voice.enabled ?? true
+const enableImageUpload = config?.ui.enableImageUpload ?? true
+const enableReset = config?.ui.enableReset ?? true
+const customPlaceholder = config?.ui.inputPlaceholder || ''
+
+// 语音模式 - 如果语音未启用，强制为 false
+const voiceMode = computed({
+  get: () => enableVoice ? voiceModeInternal.value : false,
+  set: (val: boolean) => { voiceModeInternal.value = val },
+})
+const voiceModeInternal = ref(false)
+
+// 输入框占位符
+const placeholderText = computed(() => customPlaceholder || t('ai_chat_input_inputPlaceholder'))
 
 // STT preview
 const sttPreviewText = ref('')
@@ -39,7 +54,7 @@ const cancelSttPreview = () => { sttPreviewText.value = '' }
 
 // Voice
 const recorder = useVoiceRecorder({
-  sender: props.sender,
+  sender,
   sttEndpoint: config?.voice.sttEndpoint,
   onResult: (text) => { sttPreviewText.value = text },
   onEmpty: () => { msg.warning(t('ai_chat_input_voiceEmpty')) },
@@ -196,23 +211,23 @@ onBeforeUnmount(() => {
 
     <!-- Main input -->
     <form @submit="handleSubmit" class="input-form">
-      <button type="button" class="mode-toggle-btn" @click="voiceMode = !voiceMode" :title="voiceMode ? $t('ai_chat_input_inputPlaceholder') : $t('ai_chat_input_holdToTalk')">
+      <button v-if="enableVoice" type="button" class="mode-toggle-btn" @click="voiceMode = !voiceMode" :title="voiceMode ? placeholderText : $t('ai_chat_input_holdToTalk')">
         <IconMdiKeyboard v-if="voiceMode" class="btn-icon" />
         <IconMdiMicrophone v-else class="btn-icon" />
       </button>
 
       <div class="input-wrapper">
         <template v-if="!voiceMode">
-          <button type="button" class="inline-action-btn" style="margin-left: 4px" @click="images.triggerImageSelect" :title="$t('ai_chat_input_uploadImageTip')">
+          <button v-if="enableImageUpload" type="button" class="inline-action-btn" style="margin-left: 4px" @click="images.triggerImageSelect" :title="$t('ai_chat_input_uploadImageTip')">
             <IconMdiPaperclip class="btn-icon" />
           </button>
-          <input v-model="input" type="text" class="chat-input" :placeholder="$t('ai_chat_input_inputPlaceholder')" @keyup="handleKeyup" />
+          <input v-model="input" type="text" class="chat-input" :placeholder="placeholderText" @keyup="handleKeyup" />
           <button type="submit" class="send-btn" :class="{ active: canSend }" :disabled="!canSend">
             <IconMdiArrowUp class="btn-icon" />
           </button>
         </template>
         <template v-else>
-          <button type="button" class="inline-action-btn inline-action-btn--compact" style="margin-left: 4px" @click="images.triggerImageSelect">
+          <button v-if="enableImageUpload" type="button" class="inline-action-btn inline-action-btn--compact" style="margin-left: 4px" @click="images.triggerImageSelect">
             <IconMdiPaperclip class="btn-icon" />
           </button>
           <div class="hold-to-talk-btn" :class="{ active: recorder.isRecording.value, disabled: recorder.isTranscribing.value || pendingToolCall || showSttPreview }" @touchstart="onHoldStart" @touchmove="onHoldMove" @touchend="onHoldEnd" @touchcancel="onHoldEnd" @mousedown="onMouseHoldStart">
@@ -229,7 +244,7 @@ onBeforeUnmount(() => {
         </template>
       </div>
 
-      <button type="button" class="reset-btn" @click="confirmReset" :title="$t('ai_chat_header_resetChat')">
+      <button v-if="enableReset" type="button" class="reset-btn" @click="confirmReset" :title="$t('ai_chat_header_resetChat')">
         <IconMdiRefresh class="btn-icon" />
       </button>
     </form>

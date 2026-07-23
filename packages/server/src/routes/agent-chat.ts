@@ -1,6 +1,6 @@
 import { FastifyPluginAsync } from 'fastify'
 import { z } from 'zod'
-import { streamText, convertToModelMessages, toUIMessageStream, createUIMessageStreamResponse, type UIMessage } from 'ai'
+import { streamText, toUIMessageStream, createUIMessageStreamResponse } from 'ai'
 import { createOpenAICompatible } from '@ai-sdk/openai-compatible'
 import { conversationRepo } from '../repositories/conversation.js'
 
@@ -36,8 +36,12 @@ export const agentChatRoute: FastifyPluginAsync = async (fastify) => {
     // Get or create conversation from database
     const conversation = await conversationRepo.getOrCreateConversation(agentId, userId)
 
-    // Convert frontend messages to ModelMessage format
-    const modelMessages = await convertToModelMessages(messages as UIMessage[])
+    // Convert frontend messages to AI SDK ModelMessage format
+    // Frontend sends { role, content } — map to ModelMessage { role, content }
+    const modelMessages = messages.map((msg: any) => ({
+      role: msg.role,
+      content: msg.content || msg.parts?.map((p: any) => p.text).filter(Boolean).join('') || '',
+    }))
 
     // Convert tools to AI SDK format
     const aiTools = tools.reduce((acc, tool) => {

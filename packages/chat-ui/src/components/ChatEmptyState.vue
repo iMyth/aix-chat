@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
+import { useChatI18n } from '../i18n/useChatI18n'
 import { computed } from 'vue'
 
-const { t } = useI18n()
+const { t } = useChatI18n()
 const props = defineProps<{
   title?: string
   description?: string

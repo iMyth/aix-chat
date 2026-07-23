@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
+import { useChatI18n } from '../i18n/useChatI18n'
 import { inject, computed, ref } from 'vue'
 
 import MarkdownRenderer from './MarkdownRenderer.vue'
@@ -8,7 +8,7 @@ import ChatAvatar from './ChatAvatar.vue'
 import { CHAT_CONFIG_KEY } from '../registry/symbols'
 import type { ChatConfig } from '../config/types'
 
-const { t } = useI18n()
+const { t } = useChatI18n()
 
 const props = defineProps<{
   message: Record<string, any>

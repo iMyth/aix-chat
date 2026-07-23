@@ -10,6 +10,8 @@
 npm install aix-chat
 ```
 
+就这样 — `aix-chat` 内置了 `vue-i18n`，不需要额外配置。
+
 ## 最简用法
 
 ```vue

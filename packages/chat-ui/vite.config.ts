@@ -29,7 +29,7 @@ export default defineConfig({
       formats: ['es'],
     },
     rollupOptions: {
-      external: ['vue', 'ai', '@ai-sdk/vue'],
+      external: ['vue', 'vue-i18n', 'ai', '@ai-sdk/vue'],
       output: {
         globals: {
           vue: 'Vue',

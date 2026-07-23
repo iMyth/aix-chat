@@ -5,6 +5,34 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.0.4] - 2025-07-23
+
+### Fixed
+- **i18n zero-config**: ChatApp now works without manual `app.use(i18n)` setup. Components use `useChatI18n()` which falls back to built-in `en`/`zh` locales if the consumer app hasn't installed vue-i18n
+- Moved `vue-i18n` from `peerDependencies` to `dependencies` — `npm install aix-chat` is all that's needed
+- `mountChat()` now auto-registers i18n on the app instance
+- Added `vue-i18n` to Vite `external` list to prevent duplicate bundling
+
+### Added
+- Exported `CardMap` and `CardRegistry` types from index
+
+## [1.0.3] - 2025-07-23
+
+### Added
+- Backend integration guide with Vercel AI SDK reference implementation in all READMEs
+- Bilingual READMEs (en + zh-CN) with cross-links
+
+### Fixed
+- Server: added CORS headers to streaming response (`reply.hijack()` bypasses Fastify `onSend` hook)
+- Server: replaced `convertToModelMessages` with direct message mapping for AI SDK v7 compatibility
+
+## [1.0.2] - 2025-07-23
+
+### Fixed
+- Docker Compose healthcheck: added `-d aix_chat` to `pg_isready`
+- Demo: removed compiled `.js` artifacts from git, added `packages/demo/.gitignore`
+- `.env.example` now matches actual server code (`DASHSCOPE_API_KEY` instead of `OPENAI_API_KEY`)
+
 ## [1.0.1] - 2025-07-23
 
 ### Fixed

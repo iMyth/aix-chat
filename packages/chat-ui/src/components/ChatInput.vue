@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, inject, onBeforeUnmount, ref } from 'vue'
-import { useI18n } from 'vue-i18n'
+import { useChatI18n } from '../i18n/useChatI18n'
 
 import { useChatMessage } from '../composables/useChatMessage'
 import { useImageAttachment } from '../composables/useImageAttachment'
@@ -8,7 +8,7 @@ import { useVoiceRecorder } from '../composables/useVoiceRecorder'
 import { CHAT_CONFIG_KEY } from '../registry/symbols'
 import type { ChatConfig } from '../config/types'
 
-const { t } = useI18n()
+const { t } = useChatI18n()
 const msg = useChatMessage()
 const config = inject<ChatConfig>(CHAT_CONFIG_KEY)
 

@@ -10,6 +10,8 @@ Drop-in Vue 3 AI chat component. Streaming responses, custom cards, voice input,
 npm install aix-chat
 ```
 
+That's it — `aix-chat` bundles `vue-i18n` internally, so no extra setup needed.
+
 ## Quick Start
 
 ```vue

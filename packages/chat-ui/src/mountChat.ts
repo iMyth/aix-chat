@@ -1,6 +1,7 @@
 import { createApp } from 'vue'
 import ChatApp from './ChatApp.vue'
 import type { ToolConfig } from './tools/createChat'
+import { ensureI18n } from './i18n/setup'
 
 export interface MountChatOptions {
   agentId: string
@@ -40,6 +41,7 @@ export function mountChat(
   }
 
   const app = createApp(ChatApp, options as any)
+  ensureI18n(app)
   app.mount(el)
 
   return {

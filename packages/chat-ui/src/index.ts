@@ -10,6 +10,7 @@ export { default as MarkdownRenderer } from './components/MarkdownRenderer.vue'
 export { default as CardRenderer } from './registry/CardRenderer.vue'
 export { createCardRegistry } from './registry/createCardRegistry'
 export { useCardRegistry } from './registry/useCardRegistry'
+export type { CardMap, CardRegistry } from './registry/createCardRegistry'
 
 // ─── Config ──────────────────────────────────────────────────────────
 export { defineChatConfig } from './config/defineChatConfig'

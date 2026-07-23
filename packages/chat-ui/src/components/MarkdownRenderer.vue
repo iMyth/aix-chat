@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, onUpdated, ref } from 'vue'
-import { useI18n } from 'vue-i18n'
+import { useChatI18n } from '../i18n/useChatI18n'
 import { marked } from 'marked'
 
-const { t } = useI18n()
+const { t } = useChatI18n()
 const props = defineProps<{ content: string }>()
 
 const markdownRef = ref<HTMLElement | null>(null)

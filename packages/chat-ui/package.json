@@ -1,6 +1,6 @@
 {
   "name": "aix-chat",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Vue 3 AI chat UI — streaming, custom tool cards, voice & image input, light/dark theme. Ships with Claude Code Skills.",
   "license": "MIT",
   "author": "iMyth",

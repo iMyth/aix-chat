@@ -2,6 +2,8 @@
 
 一个简洁的 AI 聊天组件库和演示项目。提供开箱即用的 Vue 3 聊天界面，支持自定义工具、卡片组件、流式响应等功能。
 
+[English](./README.md)
+
 ## 项目结构
 
 ```
@@ -176,37 +178,58 @@ const headers = {
 
 完整的组件文档请看 [packages/chat-ui/README.zh-CN.md](./packages/chat-ui/README.zh-CN.md)。
 
-## API 文档
+## 后端对接
 
-### 后端 API
+组件对接一个 SSE 流式端点（默认：`POST /api/agent/chat`）。你的后端接收消息 + 工具定义，调用 LLM，流式返回响应。
 
-#### POST /api/agent/chat
+### 请求格式
 
-请求体：
 ```json
 {
-  "agentId": "string",
-  "messages": [...],
-  "tools": [...],
-  "systemPrompt": "string"
+  "agentId": "my-agent",
+  "messages": [{ "role": "user", "content": "你好" }],
+  "tools": [
+    { "name": "showOptions", "description": "...", "parameters": { ... } }
+  ],
+  "systemPrompt": "你是助手..."
 }
 ```
 
-响应：SSE 流式响应
+### 响应格式
 
-### 前端组件
+SSE 流，使用 [AI SDK UI Message Stream](https://sdk.vercel.ai/docs/reference/ai-sdk-ui/stream-protocol#ui-message-stream) 协议。
 
-#### ChatApp Props
+### 最小后端实现
 
-| Prop | 类型 | 必填 | 说明 |
-|------|------|------|------|
-| `agentId` | `string` | ✅ | Agent ID |
-| `apiBase` | `string` | ❌ | API 基础地址（默认空，走相对路径） |
-| `apiEndpoint` | `string` | ❌ | API 端点（默认 `/api/agent/chat`） |
-| `tools` | `ToolConfig[]` | ❌ | 工具列表 |
-| `headers` | `Record<string, string> \| () => Record<string, string>` | ❌ | 请求头 |
-| `systemPrompt` | `string` | ❌ | 系统提示词 |
-| `welcome` | `{ text: string, quickReplies?: Array<{ label: string, value: string }> }` | ❌ | 欢迎消息 |
+```ts
+import { streamText, convertToModelMessages, toUIMessageStream, createUIMessageStreamResponse } from 'ai'
+import { createOpenAI } from '@ai-sdk/openai'
+
+const openai = createOpenAI({ apiKey: process.env.OPENAI_API_KEY })
+
+export async function POST(req: Request) {
+  const { messages, tools = [], systemPrompt } = await req.json()
+
+  const aiTools = Object.fromEntries(
+    tools.map((t: any) => [t.name, { description: t.description, parameters: t.parameters }])
+  )
+
+  const result = streamText({
+    model: openai('gpt-4o-mini'),
+    instructions: systemPrompt,
+    messages: await convertToModelMessages(messages),
+    tools: aiTools,
+  })
+
+  return createUIMessageStreamResponse({
+    stream: toUIMessageStream({ stream: result.stream, sendReasoning: true }),
+  })
+}
+```
+
+支持 AI SDK 的任何 AI 提供商 — OpenAI、Anthropic、Google、DashScope（通义千问）、Ollama 等。
+
+完整的组件文档请看 [packages/chat-ui/README.zh-CN.md](./packages/chat-ui/README.zh-CN.md)。
 
 ## Claude Code Skills
 

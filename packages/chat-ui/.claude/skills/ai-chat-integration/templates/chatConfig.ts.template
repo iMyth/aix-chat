@@ -4,7 +4,7 @@
  * 在这里注册你的卡片组件映射、工具显示名、Transport 配置。
  * 将此配置传给 <AiChatProvider :config="chatConfig">
  */
-import { defineChatConfig } from '@/chat'
+import { defineChatConfig } from 'aix-chat'
 
 // 导入你的卡片组件
 // import OptionSelectorCard from './components/OptionSelectorCard.vue'

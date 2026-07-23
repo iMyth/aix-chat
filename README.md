@@ -178,37 +178,58 @@ const headers = {
 
 For full documentation on the chat component, see [packages/chat-ui/README.md](./packages/chat-ui/README.md).
 
-## API Reference
+## Backend Integration
 
-### Backend API
+The component talks to a single SSE endpoint (default: `POST /api/agent/chat`). Your backend receives messages + tool definitions, calls an LLM, and streams back responses.
 
-#### POST /api/agent/chat
+### Request
 
-Request body:
 ```json
 {
-  "agentId": "string",
-  "messages": [...],
-  "tools": [...],
-  "systemPrompt": "string"
+  "agentId": "my-agent",
+  "messages": [{ "role": "user", "content": "Hello" }],
+  "tools": [
+    { "name": "showOptions", "description": "...", "parameters": { ... } }
+  ],
+  "systemPrompt": "You are an assistant..."
 }
 ```
 
-Response: SSE streaming
+### Response
 
-### Frontend Component
+SSE stream in [AI SDK UI Message Stream](https://sdk.vercel.ai/docs/reference/ai-sdk-ui/stream-protocol#ui-message-stream) format.
 
-#### ChatApp Props
+### Minimal Reference Implementation
 
-| Prop | Type | Required | Description |
-|------|------|----------|-------------|
-| `agentId` | `string` | ✅ | Agent ID |
-| `apiBase` | `string` | ❌ | API base URL (default: relative) |
-| `apiEndpoint` | `string` | ❌ | API endpoint (default `/api/agent/chat`) |
-| `tools` | `ToolConfig[]` | ❌ | Tool list |
-| `headers` | `Record<string, string> \| () => Record<string, string>` | ❌ | Request headers |
-| `systemPrompt` | `string` | ❌ | System prompt |
-| `welcome` | `{ text: string, quickReplies?: Array<{ label: string, value: string }> }` | ❌ | Welcome message |
+```ts
+import { streamText, convertToModelMessages, toUIMessageStream, createUIMessageStreamResponse } from 'ai'
+import { createOpenAI } from '@ai-sdk/openai'
+
+const openai = createOpenAI({ apiKey: process.env.OPENAI_API_KEY })
+
+export async function POST(req: Request) {
+  const { messages, tools = [], systemPrompt } = await req.json()
+
+  const aiTools = Object.fromEntries(
+    tools.map((t: any) => [t.name, { description: t.description, parameters: t.parameters }])
+  )
+
+  const result = streamText({
+    model: openai('gpt-4o-mini'),
+    instructions: systemPrompt,
+    messages: await convertToModelMessages(messages),
+    tools: aiTools,
+  })
+
+  return createUIMessageStreamResponse({
+    stream: toUIMessageStream({ stream: result.stream, sendReasoning: true }),
+  })
+}
+```
+
+Works with any AI SDK provider — OpenAI, Anthropic, Google, DashScope, Ollama, etc.
+
+For full component documentation, see [packages/chat-ui/README.md](./packages/chat-ui/README.md).
 
 ## Claude Code Skills
 

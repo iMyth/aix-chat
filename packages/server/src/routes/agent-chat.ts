@@ -91,18 +91,14 @@ export const agentChatRoute: FastifyPluginAsync = async (fastify) => {
       })
 
       // Set all headers at once using writeHead (ensures CORS headers are sent)
+      const requestOrigin = request.headers.origin || '*'
       const headers: Record<string, string> = {
         'Content-Type': response.headers.get('Content-Type') || 'text/event-stream',
         'Cache-Control': 'no-cache',
         'Connection': 'keep-alive',
-      }
-
-      // Merge existing CORS headers from reply
-      const existing = reply.getHeaders() as Record<string, string | undefined>
-      for (const [key, value] of Object.entries(existing)) {
-        if (value !== undefined && !['content-type', 'cache-control', 'connection'].includes(key.toLowerCase())) {
-          headers[key] = String(value)
-        }
+        // CORS headers — @fastify/cors onSend hook doesn't run after reply.hijack()
+        'Access-Control-Allow-Origin': requestOrigin,
+        'Access-Control-Allow-Credentials': 'true',
       }
 
       // Hijack the response to handle streaming manually

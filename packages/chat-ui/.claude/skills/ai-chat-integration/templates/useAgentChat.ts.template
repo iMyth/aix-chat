@@ -2,7 +2,7 @@
  * useAgentChat — 复制即用的 Agent 聊天 composable
  *
  * 用法：
- *   1. 复制本文件到 src/demo/你的业务/composables/useAgentChat.ts
+ *   1. 复制本文件到 src/composables/useAgentChat.ts
  *   2. 改下面两处带 👈 的注释
  *   3. 在 index.vue 里 import 使用
  *
@@ -23,7 +23,7 @@ import {
   usePendingToolCall,
   ImageStrippingTransport,
   defineChatConfig,
-} from '@/chat'
+} from 'aix-chat'
 // 👇 改成你自己的 chatConfig
 import { chatConfig } from '../chatConfig'
 

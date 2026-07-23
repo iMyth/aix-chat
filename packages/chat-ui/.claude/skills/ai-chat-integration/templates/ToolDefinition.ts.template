@@ -2,14 +2,14 @@
  * AI 工具定义模板
  *
  * 用法：
- *   1. 复制本文件到 src/demo/你的业务/tools/xxxTools.ts
+ *   1. 复制本文件到 src/tools/xxxTools.ts
  *   2. 定义你的工具 schema 和执行逻辑
  *   3. 在 useAgentChat.ts 里导入使用
  *
  * 工具会同时传给后端（让 AI 知道可以调用）和前端（渲染卡片 + 执行逻辑）
  */
 
-import { defineTools } from '@/chat'
+import { defineTools } from 'aix-chat'
 // 👇 导入你的卡片组件
 // import OptionSelectorCard from '../components/OptionSelectorCard.vue'
 // import SimpleFormCard from '../components/SimpleFormCard.vue'

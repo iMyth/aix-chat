@@ -1,8 +1,8 @@
 # defineChatConfig() API 参考
 
 ```ts
-import { defineChatConfig } from '@/chat'
-import type { ChatConfigInput } from '@/chat'
+import { defineChatConfig } from 'aix-chat'
+import type { ChatConfigInput } from 'aix-chat'
 
 const config = defineChatConfig(input: ChatConfigInput): ChatConfig
 ```

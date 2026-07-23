@@ -1,42 +1,57 @@
 #!/usr/bin/env node
 
 /**
- * 自动链接 Claude Code Skills
+ * Auto-link Claude Code Skills
  *
- * 当用户安装 aix-chat 包时，自动将 skills 链接到用户项目的 .claude/skills 目录
- * 这样用户就可以使用 /ai-chat-integration 等 skill 来快速集成聊天功能
+ * When users install the aix-chat package, this script links skills
+ * to the consumer project's .claude/skills directory so they can use
+ * /ai-chat-integration to quickly integrate the chat component.
+ *
+ * Skipped if:
+ * - SKIP_AIX_SKILLS env var is set
+ * - No .claude directory exists in the project root (user doesn't use Claude Code)
  */
 
 const fs = require('fs')
 const path = require('path')
 
-// 查找项目根目录（向上查找 package.json，直到找到包含 .claude 的目录或到达根目录）
+// Skip if user opts out
+if (process.env.SKIP_AIX_SKILLS) {
+  console.log('[aix-chat] Skills linking skipped (SKIP_AIX_SKILLS is set)')
+  process.exit(0)
+}
+
+// Find project root by walking up from this script's location
 function findProjectRoot(startDir) {
   let currentDir = startDir
 
   while (currentDir !== path.dirname(currentDir)) {
-    // 检查是否是 monorepo 根目录（有 pnpm-workspace.yaml）
-    if (fs.existsSync(path.join(currentDir, 'pnpm-workspace.yaml'))) {
-      return currentDir
+    // Check for monorepo root (pnpm, yarn, npm workspaces)
+    if (
+      fs.existsSync(path.join(currentDir, 'pnpm-workspace.yaml')) ||
+      fs.existsSync(path.join(currentDir, 'yarn.lock')) ||
+      fs.existsSync(path.join(currentDir, 'package-lock.json'))
+    ) {
+      // Verify it's actually a monorepo root (has a package.json)
+      if (fs.existsSync(path.join(currentDir, 'package.json'))) {
+        return currentDir
+      }
     }
 
-    // 检查是否是独立项目根目录（有 package.json 且有 .claude 或 node_modules）
     const packageJsonPath = path.join(currentDir, 'package.json')
     if (fs.existsSync(packageJsonPath)) {
-      const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'))
+      try {
+        const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'))
 
-      // 如果是 aix-chat 本身，跳过
-      if (packageJson.name === 'aix-chat') {
-        currentDir = path.dirname(currentDir)
-        continue
-      }
+        // Skip aix-chat itself
+        if (packageJson.name === 'aix-chat') {
+          currentDir = path.dirname(currentDir)
+          continue
+        }
 
-      // 如果有 .claude 目录或 node_modules，认为是项目根目录
-      if (
-        fs.existsSync(path.join(currentDir, '.claude')) ||
-        fs.existsSync(path.join(currentDir, 'node_modules'))
-      ) {
         return currentDir
+      } catch {
+        // ignore parse errors
       }
     }
 
@@ -46,62 +61,59 @@ function findProjectRoot(startDir) {
   return null
 }
 
-// 创建符号链接
+// Create symlink (cross-platform)
 function createSymlink(src, dest) {
   try {
-    // 如果目标已存在，先删除
     if (fs.existsSync(dest)) {
       const stats = fs.lstatSync(dest)
       if (stats.isSymbolicLink()) {
         fs.unlinkSync(dest)
       } else {
-        console.log(`[aix-chat] ⚠️  ${dest} 已存在，跳过链接`)
+        console.log(`[aix-chat] ⚠️  ${dest} already exists, skipping`)
         return false
       }
     }
 
-    // 创建目标目录
     const destDir = path.dirname(dest)
     if (!fs.existsSync(destDir)) {
       fs.mkdirSync(destDir, { recursive: true })
     }
 
-    // 创建符号链接
-    fs.symlinkSync(src, dest, 'junction')
+    // Use 'junction' on Windows, 'dir' on Unix
+    const type = process.platform === 'win32' ? 'junction' : 'dir'
+    fs.symlinkSync(src, dest, type)
     return true
   } catch (error) {
-    console.error(`[aix-chat] ❌ 创建链接失败: ${error.message}`)
+    console.error(`[aix-chat] ❌ Failed to create link: ${error.message}`)
     return false
   }
 }
 
-// 主函数
 function main() {
   const packageDir = __dirname
   const skillsSource = path.join(packageDir, '..', '.claude', 'skills')
 
-  // 检查 skills 目录是否存在
   if (!fs.existsSync(skillsSource)) {
-    console.log('[aix-chat] ℹ️  Skills 目录不存在，跳过链接')
     return
   }
 
-  // 查找项目根目录
   const projectRoot = findProjectRoot(packageDir)
-
   if (!projectRoot) {
-    console.log('[aix-chat] ℹ️  未找到项目根目录，跳过 skills 链接')
     return
   }
 
-  // 创建 .claude/skills 目录
-  const skillsDest = path.join(projectRoot, '.claude', 'skills')
+  // Only link if the project already uses Claude Code (has .claude dir)
+  const claudeDir = path.join(projectRoot, '.claude')
+  if (!fs.existsSync(claudeDir)) {
+    // User doesn't use Claude Code — skip silently
+    return
+  }
 
+  const skillsDest = path.join(claudeDir, 'skills')
   if (!fs.existsSync(skillsDest)) {
     fs.mkdirSync(skillsDest, { recursive: true })
   }
 
-  // 链接每个 skill
   const skills = fs.readdirSync(skillsSource)
   let linkedCount = 0
 
@@ -109,20 +121,18 @@ function main() {
     const src = path.join(skillsSource, skill)
     const dest = path.join(skillsDest, skill)
 
-    // 只链接目录
     if (fs.statSync(src).isDirectory()) {
       if (createSymlink(src, dest)) {
-        console.log(`[aix-chat] ✅ 链接 skill: ${skill}`)
+        console.log(`[aix-chat] ✅ Linked skill: ${skill}`)
         linkedCount++
       }
     }
   }
 
   if (linkedCount > 0) {
-    console.log(`[aix-chat] 🎉 Skills 安装完成!`)
-    console.log(`[aix-chat] 💡 现在可以在 Claude Code 中使用这些 skills 了`)
-  } else {
-    console.log(`[aix-chat] ℹ️  所有 skills 已存在，无需链接`)
+    console.log(`[aix-chat] 🎉 ${linkedCount} skill(s) installed!`)
+    console.log(`[aix-chat] 💡 You can now use these skills in Claude Code`)
+    console.log(`[aix-chat] ℹ️  Set SKIP_AIX_SKILLS=1 to disable auto-linking`)
   }
 }
 

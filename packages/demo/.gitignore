@@ -1,0 +1,18 @@
+# Compiled artifacts
+*.js
+!vite.config.*.js
+
+# Build output
+dist/
+*.local
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# TypeScript build
+*.tsbuildinfo
+
+# Node modules (shouldn't be here anyway)
+node_modules/

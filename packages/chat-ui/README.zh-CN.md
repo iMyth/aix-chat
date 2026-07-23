@@ -2,6 +2,8 @@
 
 开箱即用的 Vue 3 AI 聊天组件。支持流式响应、自定义卡片、语音输入、图片上传、明暗主题。
 
+[English](./README.md)
+
 ## 安装
 
 ```bash
@@ -202,20 +204,60 @@ mkdir -p .claude
 cp -r node_modules/aix-chat/.claude/skills .claude/
 ```
 
-## 后端 API
+## 后端对接
 
-组件对接 `/api/agent/chat` 端点，发送 SSE 流式请求。请求格式：
+组件对接一个 SSE 流式端点（默认：`POST /api/agent/chat`）。你的后端接收消息 + 工具定义，调用 LLM，流式返回响应。
+
+### 请求格式
 
 ```json
 {
   "agentId": "my-agent",
   "messages": [{ "role": "user", "content": "你好" }],
-  "tools": [...],
+  "tools": [
+    { "name": "showOptions", "description": "...", "parameters": { ... } }
+  ],
   "systemPrompt": "你是助手..."
 }
 ```
 
-可用项目自带的 `packages/server`，或对接你自己的后端。
+### 响应格式
+
+SSE 流，使用 [AI SDK UI Message Stream](https://sdk.vercel.ai/docs/reference/ai-sdk-ui/stream-protocol#ui-message-stream) 协议。用 `ai` 包的 `streamText()` + `toUIMessageStream()` 生成。
+
+### 最小后端实现（Vercel AI SDK）
+
+```ts
+// POST /api/agent/chat
+import { streamText, convertToModelMessages, toUIMessageStream, createUIMessageStreamResponse } from 'ai'
+import { createOpenAI } from '@ai-sdk/openai'
+
+const openai = createOpenAI({ apiKey: process.env.OPENAI_API_KEY })
+
+export async function POST(req: Request) {
+  const { messages, tools = [], systemPrompt } = await req.json()
+
+  // 将工具定义转为 AI SDK 格式
+  const aiTools = Object.fromEntries(
+    tools.map((t: any) => [t.name, { description: t.description, parameters: t.parameters }])
+  )
+
+  const result = streamText({
+    model: openai('gpt-4o-mini'),
+    instructions: systemPrompt,
+    messages: await convertToModelMessages(messages),
+    tools: aiTools,
+  })
+
+  return createUIMessageStreamResponse({
+    stream: toUIMessageStream({ stream: result.stream, sendReasoning: true }),
+  })
+}
+```
+
+支持 AI SDK 的任何 AI 提供商 — OpenAI、Anthropic、Google、DashScope（通义千问）、Ollama 等，只需换 provider。
+
+完整的数据库持久化实现请看 Claude Code Skills 里的 `references/backend-api-guide.md`。
 
 ## 技术栈
 

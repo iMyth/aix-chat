@@ -44,7 +44,7 @@ defineProps<{
 
 ```vue
 <style scoped lang="scss">
-@use '@/chat/styles/chat-card';
+@use 'aix-chat/styles/chat-card';
 
 .my-card {
   @include chat-card.card-base;         // 卡片外壳
@@ -82,7 +82,7 @@ defineProps<{
 
 适用于：销售单位选择、配送方式选择、地址选择等。
 
-参考：`src/demo/order-assistant/components/OptionSelectorCard.vue`
+参考模板：`templates/CardComponent-Selection.vue.template`
 
 关键特征：
 - 网格布局展示选项
@@ -93,7 +93,7 @@ defineProps<{
 
 适用于：基本信息填写、订单头设置等。
 
-参考：`src/demo/order-assistant/components/SimpleFormCard.vue`
+参考模板：`templates/CardComponent-Form.vue.template`
 
 关键特征：
 - 渐变头部 + 可滚动表单区域
@@ -104,7 +104,7 @@ defineProps<{
 
 适用于：订单列表、提货单列表等。
 
-参考：`src/demo/order-assistant/components/SimpleListCard.vue`
+参考模板：`templates/CardComponent-Selection.vue.template`（列表型同理，改为竖向排列）
 
 关键特征：
 - 渐变头部 + 记录数显示

@@ -204,20 +204,60 @@ mkdir -p .claude
 cp -r node_modules/aix-chat/.claude/skills .claude/
 ```
 
-## Backend API
+## Backend Integration
 
-The component talks to the `/api/agent/chat` endpoint via SSE streaming. Request format:
+The component talks to a single SSE endpoint (default: `POST /api/agent/chat`). Your backend receives messages + tool definitions, calls an LLM, and streams back responses.
+
+### Request
 
 ```json
 {
   "agentId": "my-agent",
   "messages": [{ "role": "user", "content": "Hello" }],
-  "tools": [...],
+  "tools": [
+    { "name": "showOptions", "description": "...", "parameters": { ... } }
+  ],
   "systemPrompt": "You are an assistant..."
 }
 ```
 
-Use the included `packages/server` or connect to your own backend.
+### Response
+
+SSE stream in [AI SDK UI Message Stream](https://sdk.vercel.ai/docs/reference/ai-sdk-ui/stream-protocol#ui-message-stream) format. Use `streamText()` + `toUIMessageStream()` from the `ai` package.
+
+### Minimal Reference Implementation (Vercel AI SDK)
+
+```ts
+// POST /api/agent/chat
+import { streamText, convertToModelMessages, toUIMessageStream, createUIMessageStreamResponse } from 'ai'
+import { createOpenAI } from '@ai-sdk/openai'
+
+const openai = createOpenAI({ apiKey: process.env.OPENAI_API_KEY })
+
+export async function POST(req: Request) {
+  const { messages, tools = [], systemPrompt } = await req.json()
+
+  // Convert tool definitions to AI SDK format
+  const aiTools = Object.fromEntries(
+    tools.map((t: any) => [t.name, { description: t.description, parameters: t.parameters }])
+  )
+
+  const result = streamText({
+    model: openai('gpt-4o-mini'),
+    instructions: systemPrompt,
+    messages: await convertToModelMessages(messages),
+    tools: aiTools,
+  })
+
+  return createUIMessageStreamResponse({
+    stream: toUIMessageStream({ stream: result.stream, sendReasoning: true }),
+  })
+}
+```
+
+Works with any AI provider supported by the AI SDK — OpenAI, Anthropic, Google, DashScope, Ollama, etc. Just swap the provider.
+
+See `references/backend-api-guide.md` in the bundled Claude Code Skills for a full implementation with database persistence.
 
 ## Tech Stack
 

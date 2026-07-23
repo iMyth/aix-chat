@@ -8,7 +8,7 @@ import {
   ChatInput,
   usePendingToolCall,
   ImageStrippingTransport,
-} from '@/chat'
+} from 'aix-chat'
 import { chatConfig } from '../chatConfig'
 
 // ─── 你的业务 Composables ──────────────────────────────────────────
@@ -129,7 +129,7 @@ onMounted(() => {
 </template>
 
 <style scoped>
-@import '@/chat/styles/theme.css';
+@import 'aix-chat/styles/theme.css';
 
 .chat-page { position: fixed; inset: 0; background: var(--bg-page); }
 .chat-container { display: flex; flex-direction: column; width: 100%; height: 100%; }

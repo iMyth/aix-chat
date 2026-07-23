@@ -63,7 +63,7 @@ VITE_APP_AI_KEY=your-api-key
 把 `templates/useAgentChat.ts.template` 复制到你的业务目录：
 
 ```bash
-cp templates/useAgentChat.ts.template src/demo/你的业务/composables/useAgentChat.ts
+cp templates/useAgentChat.ts.template src/composables/useAgentChat.ts
 ```
 
 文件里所有 `// 👈 改这里` 的地方，按注释改一下。通常只需要改两处：
@@ -179,5 +179,4 @@ async function deleteConversation(id: string) {
 ## 相关文档
 
 - `templates/useAgentChat.ts.template` — 复制即用的 composable
-- `docs/agent-api.md` — 完整的后端接口文档（想看细节时翻）
 - `references/config-reference.md` — chatConfig 完整配置

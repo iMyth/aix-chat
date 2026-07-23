@@ -47,7 +47,7 @@ function getIcon(value: string): string | null {
 </template>
 
 <style scoped lang="scss">
-@use '@/chat/styles/chat-card';
+@use 'aix-chat/styles/chat-card';
 
 .{{KEBAB_NAME}}-card { @include chat-card.selector-card-base; }
 .card-title { @include chat-card.selector-title; }

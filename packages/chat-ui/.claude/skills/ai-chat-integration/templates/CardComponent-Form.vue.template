@@ -45,7 +45,7 @@ const formData = reactive<Record<string, string>>({})
 </template>
 
 <style scoped lang="scss">
-@use '@/chat/styles/chat-card';
+@use 'aix-chat/styles/chat-card';
 
 .{{KEBAB_NAME}}-card { @include chat-card.card-base; }
 .card-header { @include chat-card.card-header; }

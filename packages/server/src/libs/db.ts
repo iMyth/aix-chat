@@ -1,3 +1,4 @@
+import '../env.js'
 import postgres from 'postgres'
 
 const connectionString = process.env.DATABASE_URL || 'postgresql://aix:aix123@localhost:5432/aix_chat'

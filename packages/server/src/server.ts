@@ -1,3 +1,5 @@
+// Loads the repo-root .env — must stay the first import (see env.ts)
+import { envPath } from './env.js'
 import Fastify from 'fastify'
 import cors from '@fastify/cors'
 import { agentChatRoute } from './routes/agent-chat.js'
@@ -24,11 +26,18 @@ fastify.get('/health', async () => {
 // Start server
 const start = async () => {
   try {
+    // Warn early — an empty key otherwise only surfaces as an opaque upstream error
+    if (!process.env.DASHSCOPE_API_KEY) {
+      console.warn('⚠️  DASHSCOPE_API_KEY is not set — AI requests will fail.')
+      console.warn(`   Add it to ${envPath} (see .env.example).`)
+    }
+
     // Test database connection
     const dbConnected = await testConnection()
     if (!dbConnected) {
       console.error('❌ Database connection failed. Please ensure PostgreSQL is running.')
-      console.error('   Run: docker-compose up -d')
+      console.error('   Run: docker compose up -d   (older Docker CLI: docker-compose up -d)')
+      console.error(`   Or point DATABASE_URL in ${envPath} at another PostgreSQL instance.`)
       process.exit(1)
     }
 

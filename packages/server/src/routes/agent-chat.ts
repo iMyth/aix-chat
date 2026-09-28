@@ -1,3 +1,4 @@
+import '../env.js'
 import { FastifyPluginAsync } from 'fastify'
 import { z } from 'zod'
 import { streamText, toUIMessageStream, createUIMessageStreamResponse } from 'ai'

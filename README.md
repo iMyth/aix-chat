@@ -383,7 +383,10 @@ An SSE stream in [AI SDK UI Message Stream](https://sdk.vercel.ai/docs/reference
 
 ```ts
 // POST /api/agent/chat
-import { streamText, toUIMessageStream, createUIMessageStreamResponse } from 'ai'
+import {
+  streamText, toUIMessageStream, createUIMessageStreamResponse,
+  convertToModelMessages, jsonSchema
+} from 'ai'
 import { createOpenAICompatible } from '@ai-sdk/openai-compatible'
 
 const model = createOpenAICompatible({
@@ -395,17 +398,23 @@ const model = createOpenAICompatible({
 export async function POST(req: Request) {
   const { messages, tools = [], systemPrompt } = await req.json()
 
+  // v7 tools carry their schema in `inputSchema`, wrapped in jsonSchema()
+  // for a plain JSON Schema object
   const aiTools = Object.fromEntries(
-    tools.map((t: any) => [t.name, { description: t.description, parameters: t.parameters ?? {} }])
+    tools.map((t: any) => [
+      t.name,
+      {
+        description: t.description,
+        inputSchema: jsonSchema(t.parameters ?? { type: 'object', properties: {} })
+      }
+    ])
   )
 
   const result = streamText({
     model: model(process.env.TEXT_MODEL ?? 'qwen3.6-plus'),
     instructions: systemPrompt,
-    messages: messages.map((m: any) => ({
-      role: m.role,
-      content: m.content || m.parts?.map((p: any) => p.text).filter(Boolean).join('') || ''
-    })),
+    // Keeps tool calls and tool results in the history — see the note below
+    messages: await convertToModelMessages(messages, { tools: aiTools }),
     tools: aiTools
   })
 
@@ -414,6 +423,11 @@ export async function POST(req: Request) {
   })
 }
 ```
+
+Two details in there decide whether tool calling works at all:
+
+- **`inputSchema`, not `parameters`.** A v7 tool ignores `parameters`, so the model receives a tool with no parameter schema and calls it with empty arguments — your card then renders with no data.
+- **`convertToModelMessages` must be awaited, and must receive the same `tools` set.** Mapping the UI messages to text by hand (e.g. `msg.parts.map(p => p.text).join('')`) silently drops tool calls and tool results. The model then never sees what the frontend executed and calls the same tool again on every round trip, forever — one POST per iteration.
 
 Any AI SDK provider works — swap the client, keep the stream shape. For a full implementation with database persistence, see `.claude/skills/ai-chat-integration/references/backend-api-guide.md` in `packages/chat-ui`.
 
@@ -430,6 +444,8 @@ Any AI SDK provider works — swap the client, keep the stream shape. For a full
 **Tables are missing / schema changes have no effect** — `init.sql` only runs on a fresh volume. Run `docker compose down -v && docker compose up -d` to recreate, or apply `init.sql` manually.
 
 **Voice button fails** — expected in the demo: the backend does not implement `POST /api/stt/open`. See [Voice input](#voice-input-needs-a-speech-to-text-endpoint).
+
+**The same tool gets called over and over** — the backend is dropping tool results from the message history, so the model never learns the tool ran. It must convert UI messages with `convertToModelMessages(messages, { tools })`; see the two notes under [Minimal reference implementation](#backend-api). The same symptom with empty arguments means the tool schema is not reaching the model — a v7 tool needs `inputSchema`, not `parameters`.
 
 **Requests blocked by CORS** — the server reflects the request origin (`origin: true`), so a browser error usually means an origin mismatch or a proxy stripping headers. Simplest fix: set `api-base` to the backend's absolute URL, as the demo does.
 

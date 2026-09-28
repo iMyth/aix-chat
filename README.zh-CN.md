@@ -383,7 +383,10 @@ export const tools = defineTools([
 
 ```ts
 // POST /api/agent/chat
-import { streamText, toUIMessageStream, createUIMessageStreamResponse } from 'ai'
+import {
+  streamText, toUIMessageStream, createUIMessageStreamResponse,
+  convertToModelMessages, jsonSchema
+} from 'ai'
 import { createOpenAICompatible } from '@ai-sdk/openai-compatible'
 
 const model = createOpenAICompatible({
@@ -395,17 +398,22 @@ const model = createOpenAICompatible({
 export async function POST(req: Request) {
   const { messages, tools = [], systemPrompt } = await req.json()
 
+  // v7 的工具用 `inputSchema` 承载参数结构，纯 JSON Schema 需用 jsonSchema() 包装
   const aiTools = Object.fromEntries(
-    tools.map((t: any) => [t.name, { description: t.description, parameters: t.parameters ?? {} }])
+    tools.map((t: any) => [
+      t.name,
+      {
+        description: t.description,
+        inputSchema: jsonSchema(t.parameters ?? { type: 'object', properties: {} })
+      }
+    ])
   )
 
   const result = streamText({
     model: model(process.env.TEXT_MODEL ?? 'qwen3.6-plus'),
     instructions: systemPrompt,
-    messages: messages.map((m: any) => ({
-      role: m.role,
-      content: m.content || m.parts?.map((p: any) => p.text).filter(Boolean).join('') || ''
-    })),
+    // 保留历史里的工具调用与工具结果 —— 详见下方说明
+    messages: await convertToModelMessages(messages, { tools: aiTools }),
     tools: aiTools
   })
 
@@ -414,6 +422,11 @@ export async function POST(req: Request) {
   })
 }
 ```
+
+其中两处细节直接决定工具调用能不能跑通：
+
+- **用 `inputSchema`，不是 `parameters`。** v7 会忽略 `parameters`，于是模型拿到的是没有参数结构的工具，调用时只会传空参数 —— 卡片也就渲染不出数据。
+- **`convertToModelMessages` 必须 await，且要传入同一份 `tools`。** 手工把 UI 消息映射成纯文本（例如 `msg.parts.map(p => p.text).join('')`）会静默丢掉工具调用与工具结果，模型看不到前端已执行的结果，于是每次往返都重复调用同一个工具，无限循环 —— 每轮一次 POST。
 
 任何 AI SDK 供应商都适用 —— 换掉客户端即可，流的格式不变。带数据库落库的完整实现见 `packages/chat-ui` 内的 `.claude/skills/ai-chat-integration/references/backend-api-guide.md`。
 
@@ -430,6 +443,8 @@ export async function POST(req: Request) {
 **表不存在 / 改了表结构却不生效** —— `init.sql` 只在数据卷全新时执行。用 `docker compose down -v && docker compose up -d` 重建，或手动执行 `init.sql`。
 
 **语音按钮报错** —— 演示中属预期行为：后端没有实现 `POST /api/stt/open`。见[语音输入需要一个语音识别接口](#语音输入需要一个语音识别接口)。
+
+**同一个工具被反复调用** —— 后端把工具结果从消息历史里丢掉了，模型不知道工具已经执行过。必须用 `convertToModelMessages(messages, { tools })` 转换 UI 消息，详见[最小参考实现](#后端接口)下方的两点说明。若症状是「参数始终为空」，则是工具结构没传到模型 —— v7 的工具要用 `inputSchema`，不是 `parameters`。
 
 **请求被 CORS 拦截** —— 服务端会回显请求来源（`origin: true`），浏览器报错通常意味着来源不匹配或代理丢掉了请求头。最省事的办法是像演示那样，把 `api-base` 指向后端的绝对地址。
 

@@ -1,7 +1,7 @@
 import '../env.js'
 import { FastifyPluginAsync } from 'fastify'
 import { z } from 'zod'
-import { streamText, toUIMessageStream, createUIMessageStreamResponse } from 'ai'
+import { streamText, toUIMessageStream, createUIMessageStreamResponse, convertToModelMessages, jsonSchema } from 'ai'
 import { createOpenAICompatible } from '@ai-sdk/openai-compatible'
 import { conversationRepo } from '../repositories/conversation.js'
 
@@ -37,21 +37,21 @@ export const agentChatRoute: FastifyPluginAsync = async (fastify) => {
     // Get or create conversation from database
     const conversation = await conversationRepo.getOrCreateConversation(agentId, userId)
 
-    // Convert frontend messages to AI SDK ModelMessage format
-    // Frontend sends { role, content } — map to ModelMessage { role, content }
-    const modelMessages = messages.map((msg: any) => ({
-      role: msg.role,
-      content: msg.content || msg.parts?.map((p: any) => p.text).filter(Boolean).join('') || '',
-    }))
-
-    // Convert tools to AI SDK format
+    // Convert tools to AI SDK format. v7 tools take `inputSchema` (not `parameters`) —
+    // without it the model receives no parameter schema and calls tools with `{}`.
     const aiTools = tools.reduce((acc, tool) => {
       acc[tool.name] = {
         description: tool.description,
-        parameters: tool.parameters || {},
+        inputSchema: jsonSchema(tool.parameters || { type: 'object', properties: {} }),
       }
       return acc
     }, {} as Record<string, any>)
+
+    // Convert frontend UI messages to ModelMessages. This keeps tool calls and tool
+    // results in the history — mapping only the text parts makes the model repeat
+    // every tool call, because it never sees the result the frontend executed.
+    // Pass the same tools so tool parts can be converted.
+    const modelMessages = await convertToModelMessages(messages, { tools: aiTools })
 
     try {
       const result = streamText({
